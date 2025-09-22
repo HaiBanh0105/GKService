@@ -4,302 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập - Hệ thống thanh toán học phí</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .login-container {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-            width: 100%;
-            max-width: 450px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .login-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-        }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .logo h1 {
-            color: #333;
-            font-size: 2.2rem;
-            font-weight: 300;
-            margin-bottom: 8px;
-        }
-
-        .logo p {
-            color: #666;
-            font-size: 1rem;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-            position: relative;
-        }
-
-        label {
-            display: block;
-            color: #333;
-            font-weight: 500;
-            margin-bottom: 8px;
-            font-size: 0.95rem;
-        }
-
-        input[type="text"],
-        input[type="password"] {
-            width: 100%;
-            padding: 15px 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: white;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #666;
-            font-size: 1.2rem;
-            user-select: none;
-        }
-
-        .password-toggle:hover {
-            color: #667eea;
-        }
-
-        .forgot-password {
-            text-align: right;
-            margin-bottom: 25px;
-        }
-
-        .forgot-password a {
-            color: #667eea;
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.3s ease;
-        }
-
-        .forgot-password a:hover {
-            color: #764ba2;
-            text-decoration: underline;
-        }
-
-        .login-btn {
-            width: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 20px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-        }
-
-        .login-btn:active {
-            transform: translateY(0);
-        }
-
-        .login-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .register-link {
-            text-align: center;
-            margin-top: 25px;
-            padding-top: 25px;
-            border-top: 1px solid #eee;
-        }
-
-        .register-link p {
-            color: #666;
-            margin-bottom: 10px;
-        }
-
-        .register-btn {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 10px 20px;
-            border: 2px solid #667eea;
-            border-radius: 8px;
-            display: inline-block;
-            transition: all 0.3s ease;
-        }
-
-        .register-btn:hover {
-            background: #667eea;
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #fcc;
-            display: none;
-            font-size: 0.9rem;
-        }
-
-        .success-message {
-            background: #efe;
-            color: #3c3;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #cfc;
-            display: none;
-            font-size: 0.9rem;
-        }
-
-        .loading-spinner {
-            display: none;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #fff;
-            border-top: 2px solid transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .user-info-section {
-            display: none;
-            background: #f8f9ff;
-            padding: 25px;
-            border-radius: 12px;
-            margin-top: 20px;
-            border: 1px solid #e0e8ff;
-        }
-
-        .user-info-title {
-            color: #667eea;
-            font-weight: 600;
-            margin-bottom: 15px;
-            font-size: 1.1rem;
-        }
-
-        .user-info-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .user-info-item:last-child {
-            border-bottom: none;
-        }
-
-        .user-info-label {
-            font-weight: 500;
-            color: #333;
-        }
-
-        .user-info-value {
-            color: #666;
-            font-weight: normal;
-        }
-
-        .transaction-history {
-            margin-top: 15px;
-        }
-
-        .transaction-item {
-            background: white;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            border-left: 4px solid #667eea;
-        }
-
-        .continue-btn {
-            width: 100%;
-            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-            color: white;
-            padding: 15px 20px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-        }
-
-        .continue-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(46, 204, 113, 0.3);
-        }
-
-        @media (max-width: 480px) {
-            .login-container {
-                padding: 30px 25px;
-                margin: 10px;
-            }
-            
-            .logo h1 {
-                font-size: 1.8rem;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="login.css">
+    
 </head>
 <body>
     <div class="login-container">
@@ -308,8 +14,8 @@
             <p>Hệ thống thanh toán học phí</p>
         </div>
 
-        <div class="error-message" id="errorMessage"></div>
-        <div class="success-message" id="successMessage"></div>
+        <div class="error-message" id="errorMessage" style="display:none;"></div>
+        <div class="success-message" id="successMessage" style="display:none;"></div>
 
         <form id="loginForm">
             <div class="form-group">
@@ -328,265 +34,93 @@
             </div>
 
             <button type="submit" class="login-btn" id="loginBtn">
-                <span class="loading-spinner" id="loadingSpinner"></span>
                 <span id="loginBtnText">Đăng nhập</span>
             </button>
         </form>
 
-        <div class="register-link">
-            <p>Chưa có tài khoản?</p>
-            <a href="#" class="register-btn" id="registerBtn">Đăng ký mới tài khoản</a>
-        </div>
 
-        <!-- User Information Section (shown after successful login) -->
-        <div class="user-info-section" id="userInfoSection">
-            <h3 class="user-info-title">Thông tin tài khoản</h3>
-            
-            <div class="user-info-item">
-                <span class="user-info-label">Họ và tên:</span>
-                <span class="user-info-value" id="displayName">-</span>
-            </div>
-            
-            <div class="user-info-item">
-                <span class="user-info-label">Số điện thoại:</span>
-                <span class="user-info-value" id="displayPhone">-</span>
-            </div>
-            
-            <div class="user-info-item">
-                <span class="user-info-label">Email:</span>
-                <span class="user-info-value" id="displayEmail">-</span>
-            </div>
-            
-            <div class="user-info-item">
-                <span class="user-info-label">Số dư khả dụng:</span>
-                <span class="user-info-value" id="displayBalance">-</span>
-            </div>
-
-            <div class="transaction-history">
-                <h4 style="color: #667eea; margin-bottom: 10px;">Lịch sử giao dịch gần đây</h4>
-                <div id="transactionList">
-                    <!-- Transactions will be populated here -->
-                </div>
-            </div>
-
-            <button class="continue-btn" id="continueBtn">Tiếp tục thanh toán học phí</button>
-        </div>
     </div>
 
     <script>
-        // Sample user database (in real app, this would be on backend)
-        const users = {
-            'student001': {
-                password: 'password123',
-                name: 'Nguyễn Văn An',
-                phone: '0901234567',
-                email: 'nguyenvanan@tdtu.edu.vn',
-                balance: 5000000,
-                transactions: [
-                    { date: '2024-01-15', description: 'Thanh toán học phí kỳ 1', amount: -2500000 },
-                    { date: '2024-01-10', description: 'Nạp tiền vào tài khoản', amount: 5000000 },
-                    { date: '2023-12-20', description: 'Thanh toán phí ký túc xá', amount: -800000 }
-                ]
-            },
-            'student002': {
-                password: 'mypassword',
-                name: 'Trần Thị Bình',
-                phone: '0912345678',
-                email: 'tranthibinh@tdtu.edu.vn',
-                balance: 3200000,
-                transactions: [
-                    { date: '2024-01-12', description: 'Thanh toán học phí kỳ 1', amount: -2800000 },
-                    { date: '2024-01-05', description: 'Nạp tiền từ ngân hàng', amount: 6000000 }
-                ]
-            },
-            'admin': {
-                password: 'admin123',
-                name: 'Quản trị viên',
-                phone: '0900000000',
-                email: 'admin@tdtu.edu.vn',
-                balance: 0,
-                transactions: []
-            }
-        };
+const passwordInput = document.getElementById("password");
+const passwordToggle = document.getElementById("passwordToggle");
+passwordToggle.addEventListener("click", () => {
+    passwordInput.type = passwordInput.type === "password" ? "text" : "password";
+});
 
-        // DOM elements
-        const loginForm = document.getElementById('loginForm');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const passwordToggle = document.getElementById('passwordToggle');
-        const loginBtn = document.getElementById('loginBtn');
-        const loginBtnText = document.getElementById('loginBtnText');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const errorMessage = document.getElementById('errorMessage');
-        const successMessage = document.getElementById('successMessage');
-        const userInfoSection = document.getElementById('userInfoSection');
-        const continueBtn = document.getElementById('continueBtn');
+const loginForm = document.getElementById("loginForm");
+const errorMessage = document.getElementById("errorMessage");
+const successMessage = document.getElementById("successMessage");
+const loginBtn = document.getElementById("loginBtn");
+const loginBtnText = document.getElementById("loginBtnText");
 
-        // Password toggle functionality
-        passwordToggle.addEventListener('click', function() {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            this.textContent = type === 'password' ? '👁️' : '🙈';
+function showError(msg) {
+    errorMessage.style.display = 'block';
+    errorMessage.innerText = msg;
+    successMessage.style.display = 'none';
+}
+
+function showSuccess(msg) {
+    successMessage.style.display = 'block';
+    successMessage.innerText = msg;
+    errorMessage.style.display = 'none';
+}
+
+loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    showError("");
+    errorMessage.style.display = 'none';
+    showSuccess("");
+    successMessage.style.display = 'none';
+
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!username || !password) {
+        showError("Vui lòng nhập đủ thông tin!");
+        return;
+    }
+
+    try {
+        loginBtn.disabled = true;
+        loginBtnText.textContent = 'Đang đăng nhập...';
+
+        // Điều chỉnh URL theo cấu hình XAMPP của bạn nếu khác
+        const response = await fetch("http://localhost/service/GKService/backend/auth/login.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
         });
 
-        // Show error message
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-            successMessage.style.display = 'none';
+        let data = null;
+        const text = await response.text();
+        try { data = JSON.parse(text); } catch { /* ignore */ }
+
+        if (!response.ok) {
+            const msg = (data && data.message) ? data.message : `Lỗi máy chủ (${response.status})`;
+            showError(msg);
+            return;
         }
 
-        // Show success message
-        function showSuccess(message) {
-            successMessage.textContent = message;
-            successMessage.style.display = 'block';
-            errorMessage.style.display = 'none';
-        }
-
-        // Hide messages
-        function hideMessages() {
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
-        }
-
-        // Format currency
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('vi-VN', {
-                style: 'currency',
-                currency: 'VND'
-            }).format(amount);
-        }
-
-        // Display user information
-        function displayUserInfo(user) {
-            document.getElementById('displayName').textContent = user.name;
-            document.getElementById('displayPhone').textContent = user.phone;
-            document.getElementById('displayEmail').textContent = user.email;
-            document.getElementById('displayBalance').textContent = formatCurrency(user.balance);
-
-            // Display transaction history
-            const transactionList = document.getElementById('transactionList');
-            transactionList.innerHTML = '';
-
-            if (user.transactions.length === 0) {
-                transactionList.innerHTML = '<p style="color: #666; font-style: italic;">Chưa có giao dịch nào</p>';
-            } else {
-                user.transactions.slice(0, 3).forEach(transaction => {
-                    const transactionDiv = document.createElement('div');
-                    transactionDiv.className = 'transaction-item';
-                    transactionDiv.innerHTML = `
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-weight: 500;">${transaction.description}</div>
-                                <div style="font-size: 0.85rem; color: #666;">${transaction.date}</div>
-                            </div>
-                            <div style="font-weight: 600; color: ${transaction.amount > 0 ? '#27ae60' : '#e74c3c'};">
-                                ${formatCurrency(transaction.amount)}
-                            </div>
-                        </div>
-                    `;
-                    transactionList.appendChild(transactionDiv);
-                });
-            }
-
-            userInfoSection.style.display = 'block';
-        }
-
-        // Login form submission
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const username = usernameInput.value.trim();
-            const password = passwordInput.value.trim();
-
-            // Validation
-            if (!username || !password) {
-                showError('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu');
-                return;
-            }
-
-            // Show loading state
-            loginBtn.disabled = true;
-            loadingSpinner.style.display = 'inline-block';
-            loginBtnText.textContent = 'Đang xử lý...';
-            hideMessages();
-
-            // Simulate API call delay
+        if (data && data.status === "success") {
+            showSuccess("Đăng nhập thành công!");
+            localStorage.setItem("user", JSON.stringify(data.user));
             setTimeout(() => {
-                // Check credentials
-                if (users[username] && users[username].password === password) {
-                    // Successful login
-                    showSuccess(`Đăng nhập thành công! Chào mừng ${users[username].name}`);
-                    
-                    // Hide login form and show user info
-                    loginForm.style.display = 'none';
-                    document.querySelector('.register-link').style.display = 'none';
-                    
-                    // Display user information
-                    displayUserInfo(users[username]);
-                    
-                    loginBtnText.textContent = 'Đăng nhập thành công';
-                    loginBtn.style.background = '#27ae60';
-                } else {
-                    // Failed login
-                    showError('Tên đăng nhập hoặc mật khẩu không chính xác');
-                    loginBtn.disabled = false;
-                    loadingSpinner.style.display = 'none';
-                    loginBtnText.textContent = 'Đăng nhập';
-                }
-            }, 1500);
-        });
+                window.location.href = "index.html";
+            }, 800);
+        } else {
+            showError((data && data.message) ? data.message : "Đăng nhập thất bại!");
+        }
+    } catch (err) {
+        console.error(err);
+        showError("Lỗi kết nối API!");
+    } finally {
+        loginBtn.disabled = false;
+        loginBtnText.textContent = 'Đăng nhập';
+    }
+});
+</script>
 
-        // Continue to payment
-        continueBtn.addEventListener('click', function() {
-            // In a real app, this would redirect to the payment form
-            alert('Chuyển hướng đến trang thanh toán học phí...');
-            // window.location.href = 'payment-form.html';
-        });
-
-        // Register button
-        document.getElementById('registerBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('Chức năng đăng ký mới tài khoản sẽ được phát triển trong phiên bản tiếp theo');
-        });
-
-        // Forgot password
-        document.getElementById('forgotPasswordLink').addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('Vui lòng liên hệ phòng Đào tạo để được hỗ trợ khôi phục mật khẩu');
-        });
-
-        // Auto-fill demo credentials on page load
-        window.addEventListener('load', function() {
-            // Add demo info
-            const demoInfo = document.createElement('div');
-            demoInfo.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: rgba(0,0,0,0.8);
-                color: white;
-                padding: 15px;
-                border-radius: 10px;
-                font-size: 12px;
-                z-index: 1000;
-                max-width: 250px;
-            `;
-            demoInfo.innerHTML = `
-                <strong>🔍 Demo Accounts:</strong><br>
-                • Username: <code>student001</code><br>
-                • Password: <code>password123</code><br><br>
-                • Username: <code>student002</code><br>
-                • Password: <code>mypassword</code>
-            `;
-            document.body.appendChild(demoInfo);
-
-            // Remove demo info after 10 seconds
-            setTimeout(() => {
-                demoInfo.style.opacity = '0';
-                setTimeout(() => demoInfo.remove(), 500);
-            }, 10000);
-        });
-    </script>
 </body>
 </html>
