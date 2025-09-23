@@ -8,8 +8,12 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
+        <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
             <h1>Học phí</h1>
+            <button id="logoutBtn" 
+                    style="padding: 8px 16px; border: none; border-radius: 8px; background: #e74c3c; color: white; font-weight: 600; cursor: pointer;">
+                Đăng xuất
+            </button>
         </div>
 
         <div class="form-container">
@@ -150,7 +154,7 @@ Hệ thống chỉ cho phép thanh toán toàn bộ giá trị của phần họ
     const tuitionStatusInput = document.getElementById('tuitionStatus');
     const viewHistoryBtn = document.getElementById('viewHistoryBtn');
 
-    const statusMap = { 'Completed': 'hoàn thành', 'Processing': 'đang xử lý', 'Unpaid': 'chưa nộp' };
+    const statusMap = { 'Completed': 'Hoàn thành', 'Processing': 'Đang xử lý', 'Unpaid': 'Chưa nộp' };
 
     nameInput.value = user.fullname || '';
     phoneInput.value = user.phone || '';
@@ -267,6 +271,13 @@ Hệ thống chỉ cho phép thanh toán toàn bộ giá trị của phần họ
         }
     });
 })();
+        const logoutBtn = document.getElementById('logoutBtn');
+        logoutBtn.addEventListener('click', () => {
+            if (confirm('Bạn có chắc muốn đăng xuất không?')) {
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+            }
+        });
     </script>
 </body>
 </html>

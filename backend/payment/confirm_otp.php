@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_encode(['status'=>'error','message'=>'Method not allowed']); exit; }
 
 require __DIR__ . '/db.php';
-require __DIR__ . '/../common/mailer.php';
+require __DIR__ . '/../common/PHPmailer.php';
 
 $rawBody = file_get_contents('php://input');
 $data = json_decode($rawBody, true);
@@ -78,7 +78,7 @@ try {
     $paymentPdo->commit();
 
     // Send success email
-    $subject = 'Xác nhận giao dịch học phí thành công';
+    $subject = 'Xác nhận giao dịch học phí thành công<';
     $body = '<p>Giao dịch thanh toán học phí đã hoàn tất.</p>' .
             '<p>MSSV: <strong>' . htmlspecialchars($studentId) . '</strong><br/>' .
             'Sinh viên: <strong>' . htmlspecialchars($tInfo['StudentName'] ?? '') . '</strong><br/>' .

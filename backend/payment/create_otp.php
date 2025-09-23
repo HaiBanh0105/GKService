@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_encode(['status'=>'error','message'=>'Method not allowed']); exit; }
 
 require __DIR__ . '/db.php';
-require __DIR__ . '/../common/mailer.php';
+require __DIR__ . '/../common/PHPmailer.php';
 
 $rawBody = file_get_contents('php://input');
 $data = json_decode($rawBody, true);

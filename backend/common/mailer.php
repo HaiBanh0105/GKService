@@ -1,5 +1,5 @@
 <?php
-function sendEmail($to, $subject, $body) {
+function sendEmailt($to, $subject, $body) {
     $headers = "MIME-Version: 1.0\r\n" .
                "Content-type:text/html;charset=UTF-8\r\n" .
                'From: noreply@gkservice.local' . "\r\n";
