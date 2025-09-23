@@ -174,7 +174,7 @@ Hệ thống chỉ cho phép thanh toán toàn bộ giá trị của phần họ
 
     async function fetchTuitionByStudentId(studentId) {
         try {
-            const res = await fetch(`http://localhost/service/GKService/backend/tuition/get_tuition.php?studentId=${encodeURIComponent(studentId)}`);
+            const res = await fetch(`http://localhost:8080/backend/tuition/get_tuition.php?studentId=${encodeURIComponent(studentId)}`);
             const data = await res.json();
             if (data.status === 'success') {
                 const t = data.tuition;
@@ -217,7 +217,7 @@ Hệ thống chỉ cho phép thanh toán toàn bộ giá trị của phần họ
         try {
             submitBtn.textContent = 'Đang gửi OTP qua email...';
             submitBtn.disabled = true;
-            const res = await fetch('http://localhost/service/GKService/backend/payment/create_otp.php', {
+            const res = await fetch('http://localhost:8080/backend/payment/create_otp.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId: user.id, studentId, amount, userEmail: user.email })
@@ -234,7 +234,7 @@ Hệ thống chỉ cho phép thanh toán toàn bộ giá trị của phần họ
             if (!otpInput) { alert('Bạn chưa nhập OTP'); submitBtn.disabled = false; submitBtn.textContent = 'Xác nhận giao dịch'; return; }
 
             submitBtn.textContent = 'Đang xác nhận OTP...';
-            const res2 = await fetch('http://localhost/service/GKService/backend/payment/confirm_otp.php', {
+            const res2 = await fetch('http://localhost:8080/backend/payment/confirm_otp.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ paymentId: data.paymentId, otp: otpInput.trim() })

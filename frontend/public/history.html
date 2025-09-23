@@ -38,7 +38,7 @@
 
     async function loadHistory() {
         try {
-            const res = await fetch(`http://localhost/service/GKService/backend/auth/transactions.php?userId=${user.id}`);
+            const res = await fetch(`http://localhost:8080/backend/auth/transactions.php?userId=${user.id}`);
             const data = await res.json();
             const listEl = document.getElementById('txList');
             listEl.innerHTML = '';
