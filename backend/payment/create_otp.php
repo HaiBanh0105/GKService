@@ -25,6 +25,24 @@ if ($userId <= 0 || $studentId === '' || $amount <= 0 || $userEmail === '') {
 }
 
 try {
+    // Open Tuition DB to check and update status
+    $tuitionPdo = new PDO('mysql:host=localhost;dbname=TuitionFee;charset=utf8', 'root', '');
+    $tuitionPdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Ensure tuition is Unpaid
+    $checkStmt = $tuitionPdo->prepare("SELECT Status FROM TuitionFee WHERE StudentID = :sid LIMIT 1");
+    $checkStmt->execute([':sid' => $studentId]);
+    $tuitionRow = $checkStmt->fetch(PDO::FETCH_ASSOC);
+    if (!$tuitionRow) {
+        echo json_encode(['status' => 'error', 'message' => 'Không tìm thấy học phí']);
+        exit;
+    }
+    if ($tuitionRow['Status'] !== 'Unpaid') {
+        echo json_encode(['status' => 'error', 'message' => 'Chỉ cho phép tạo OTP khi học phí ở trạng thái Chưa nộp']);
+        exit;
+    }
+
+    // Begin transaction on payment DB
     $paymentPdo->beginTransaction();
     $stmt = $paymentPdo->prepare("INSERT INTO Payment(UserID, StudentID, Amount) VALUES (:uid, :sid, :amt)");
     $stmt->execute([':uid'=>$userId, ':sid'=>$studentId, ':amt'=>$amount]);
@@ -36,6 +54,12 @@ try {
 
     $paymentPdo->commit();
 
+    // Update tuition status to Processing
+    $tuitionPdo->beginTransaction();
+    $upd = $tuitionPdo->prepare("UPDATE TuitionFee SET Status = 'Processing' WHERE StudentID = :sid");
+    $upd->execute([':sid' => $studentId]);
+    $tuitionPdo->commit();
+
     // Send email
     $subject = 'Mã OTP xác nhận thanh toán học phí';
     $body = '<p>Mã OTP của bạn là: <strong>' . htmlspecialchars($otp) . '</strong></p><p>OTP có hiệu lực trong 5 phút.</p>';
@@ -44,6 +68,7 @@ try {
     echo json_encode(['status'=>'success','paymentId'=>$paymentId]);
 } catch (Throwable $e) {
     if ($paymentPdo->inTransaction()) { $paymentPdo->rollBack(); }
+    if (isset($tuitionPdo) && $tuitionPdo->inTransaction()) { $tuitionPdo->rollBack(); }
     http_response_code(500);
     echo json_encode(['status'=>'error','message'=>'Lỗi server']);
 }

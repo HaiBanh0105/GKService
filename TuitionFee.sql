@@ -1,3 +1,5 @@
+-- Xóa nếu tồn tại database TuitionFee
+DROP DATABASE IF EXISTS TuitionFee;
 -- Tạo database
 CREATE DATABASE TuitionFee;
 

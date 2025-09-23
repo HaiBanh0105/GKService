@@ -1,5 +1,6 @@
 -- Xóa database cũ nếu có
 DROP DATABASE IF EXISTS Paymen;
+-- Tạo database mới
 CREATE DATABASE Paymen;
 USE Paymen;
 
