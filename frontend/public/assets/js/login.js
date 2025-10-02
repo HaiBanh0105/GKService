@@ -43,7 +43,7 @@ loginForm.addEventListener("submit", async (e) => {
         loginBtn.disabled = true;
         loginBtnText.textContent = 'Đang đăng nhập...';
 
-        // Điều chỉnh URL theo cấu hình XAMPP của bạn nếu khác
+        //gọi API đăng nhập
         const response = await fetch("http://localhost:8080/GKService/backend/auth/login.php", {
             method: "POST",
             headers: { "Content-Type": "application/json" },

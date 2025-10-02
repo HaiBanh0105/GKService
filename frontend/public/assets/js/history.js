@@ -9,6 +9,7 @@
     document.getElementById('uEmail').textContent = user.email || '';
     document.getElementById('uBalance').textContent = (user.balance || 0).toLocaleString('vi-VN') + ' VND';
 
+    //load lịch sử giao dịch từ database theo user id
     async function loadHistory() {
         try {
             const res = await fetch(`http://localhost:8080/GKService/backend/auth/transactions.php?userId=${user.id}`);

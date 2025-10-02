@@ -114,48 +114,72 @@
                 return;
             }
 
-            // Update status to Processing locally after OTP is sent
+            // Cập nhật trạng thái ban đầu
             currentTuitionStatus = 'Processing';
             tuitionStatusInput.value = statusMap[currentTuitionStatus];
             submitBtn.disabled = true;
             submitBtn.textContent = 'Đang xử lý';
             submitBtn.style.background = '#bdc3c7';
 
-            const otpInput = prompt('Một mã OTP đã được gửi tới email của bạn. Vui lòng nhập OTP:') || '';
-            if (!otpInput) { alert('Bạn chưa nhập OTP'); submitBtn.disabled = false; submitBtn.textContent = 'Xác nhận giao dịch'; return; }
+            // Cho phép nhập lại OTP nếu sai
+            let otpValid = false;
+            let attempts = 0;
+            const maxAttempts = 3;
 
-            submitBtn.textContent = 'Đang xác nhận OTP...';
-            const res2 = await fetch('http://localhost:8080/GKService/backend/payment/confirm_otp.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId: data.paymentId, otp: otpInput.trim() })
-            });
-            const data2 = await res2.json();
-            if (data2.status !== 'success') {
-                alert(data2.message || 'OTP không hợp lệ');
+                while (!otpValid && attempts < maxAttempts) {
+                const otpInput = prompt('Một mã OTP đã được gửi tới email của bạn. Vui lòng nhập OTP:') || '';
+                if (!otpInput) {
+                    alert('Bạn chưa nhập OTP');
+                    break;
+                }
+
+                submitBtn.textContent = 'Đang xác nhận OTP...';
+
+                try {
+                    const res2 = await fetch('http://localhost:8080/GKService/backend/payment/confirm_otp.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ paymentId: data.paymentId, otp: otpInput.trim() })
+                    });
+                    const data2 = await res2.json();
+
+                    if (data2.status === 'success') {
+                        otpValid = true;
+
+                        // Cập nhật số dư
+                        if (data2.user) {
+                            localStorage.setItem('user', JSON.stringify(data2.user));
+                            balanceInput.value = Math.floor(data2.user.balance || 0);
+                            updateTotals();
+                        }
+
+                        // Hoàn tất giao dịch
+                        currentTuitionStatus = 'Completed';
+                        tuitionStatusInput.value = statusMap[currentTuitionStatus];
+
+                        const success = document.getElementById('successMessage');
+                        success.style.display = 'block';
+                        success.scrollIntoView({ behavior: 'smooth' });
+                        submitBtn.textContent = 'Giao dịch thành công';
+                        submitBtn.style.background = '#27ae60';
+                    } else {
+                        alert(data2.message || 'OTP không hợp lệ');
+                        attempts++;
+                    }
+                } catch (err) {
+                    alert('Lỗi mạng hoặc máy chủ không phản hồi');
+                    break;
+                }
+            }
+
+            if (!otpValid) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Xác nhận giao dịch';
-                return;
+                submitBtn.style.background = '#3498db';
             }
-
-            // Refresh user balance locally
-            if (data2.user) {
-                localStorage.setItem('user', JSON.stringify(data2.user));
-                balanceInput.value = Math.floor(data2.user.balance || 0);
-                updateTotals();
-            }
-
-            // Update status to Completed and clear form for next search
-            currentTuitionStatus = 'Completed';
-            tuitionStatusInput.value = statusMap[currentTuitionStatus];
-
-            const success = document.getElementById('successMessage');
-            success.style.display = 'block';
-            success.scrollIntoView({ behavior: 'smooth' });
-            submitBtn.textContent = 'Giao dịch thành công';
-            submitBtn.style.background = '#27ae60';
-
-            // Reset searchable fields after short delay
+            else{
+        
+            // load lại form sau 0.6s
             setTimeout(() => {
                 studentIdInput.value = '';
                 studentNameInput.value = '';
@@ -167,7 +191,7 @@
                 totalAmountEl.textContent = '0 VND';
                 currentTuitionStatus = null;
                 updateTotals();
-            }, 600);
+            }, 600);}
         } catch (err) {
             console.error(err);
             alert('Lỗi kết nối dịch vụ thanh toán');

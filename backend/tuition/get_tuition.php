@@ -23,6 +23,7 @@ if ($studentId === '') {
 }
 
 try {
+    //lấy học phí theo mã số sinh viên
     $stmt = $tuitionPdo->prepare("SELECT StudentID, StudentName, Amount, DueDate, Status FROM TuitionFee WHERE StudentID = :sid LIMIT 1");
     $stmt->execute([':sid' => $studentId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);

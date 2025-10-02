@@ -23,7 +23,7 @@ if ($paymentId <= 0 || $code === '') {
 }
 
 try {
-    // Verify OTP
+    // lấy thông tin OTP
     $stmt = $paymentPdo->prepare("SELECT O.OtpID, O.IsUsed, O.ExpiredAt, P.UserID, P.StudentID, P.Amount FROM OTPs O JOIN Payment P ON P.PaymentID = O.PaymentID WHERE O.PaymentID = :pid AND O.Code = :code LIMIT 1");
     $stmt->execute([':pid'=>$paymentId, ':code'=>$code]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -35,20 +35,20 @@ try {
     $studentId = $row['StudentID'];
     $amount = (float)$row['Amount'];
 
-    // Open other DBs
+    // Kết nối đến các DB cần thiết
     $userPdo = new PDO('mysql:host=localhost;dbname=user;charset=utf8', 'root', '');
     $userPdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $tuitionPdo = new PDO('mysql:host=localhost;dbname=TuitionFee;charset=utf8', 'root', '');
     $tuitionPdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Begin distributed operations (best-effort, each within its DB tx)
+    // Bắt đầu giao dịch
     $paymentPdo->beginTransaction();
 
-    // Mark OTP used
+    // Đánh dấu OTP là đã sử dụng
     $updOtp = $paymentPdo->prepare("UPDATE OTPs SET IsUsed = 1 WHERE OtpID = :id");
     $updOtp->execute([':id'=>(int)$row['OtpID']]);
 
-    // Deduct balance and insert transaction history
+    // Trừ tiền trong tài khoản user
     $userPdo->beginTransaction();
     $balanceStmt = $userPdo->prepare("SELECT UserID, Username, FullName, Phone, Email, AvailableBalance FROM User WHERE UserID = :uid FOR UPDATE");
     $balanceStmt->execute([':uid'=>$userId]);
@@ -60,25 +60,26 @@ try {
     $updBal = $userPdo->prepare("UPDATE User SET AvailableBalance = :b WHERE UserID = :uid");
     $updBal->execute([':b'=>$newBal, ':uid'=>$userId]);
 
-    // Get tuition info for history
+    
     $tStmt = $tuitionPdo->prepare("SELECT StudentName FROM TuitionFee WHERE StudentID = :sid");
     $tStmt->execute([':sid'=>$studentId]);
     $tInfo = $tStmt->fetch(PDO::FETCH_ASSOC);
 
+    // thêm lịch sử giao dịch
     $insHist = $userPdo->prepare("INSERT INTO TransactionHistory(UserID, StudentID, StudentName, Amount) VALUES (:uid,:sid,:sname,:amt)");
     $insHist->execute([':uid'=>$userId, ':sid'=>$studentId, ':sname'=>($tInfo['StudentName'] ?? ''), ':amt'=>$amount]);
     $userPdo->commit();
 
-    // Mark tuition as Completed
+    // đổi trạng thái học phí sang Completed và gạch nợ số tiền
     $tuitionPdo->beginTransaction();
-    $updTu = $tuitionPdo->prepare("UPDATE TuitionFee SET Status = 'Completed' WHERE StudentID = :sid");
+    $updTu = $tuitionPdo->prepare("UPDATE TuitionFee SET Status = 'Completed', Amount = 0  WHERE StudentID = :sid");
     $updTu->execute([':sid'=>$studentId]);
     $tuitionPdo->commit();
 
     $paymentPdo->commit();
 
-    // Send success email
-    $subject = 'Xác nhận giao dịch học phí thành công<';
+    // Gửi email xác nhận thành công
+    $subject = 'Xác nhận giao dịch học phí thành công';
     $body = '<p>Giao dịch thanh toán học phí đã hoàn tất.</p>' .
             '<p>MSSV: <strong>' . htmlspecialchars($studentId) . '</strong><br/>' .
             'Sinh viên: <strong>' . htmlspecialchars($tInfo['StudentName'] ?? '') . '</strong><br/>' .
