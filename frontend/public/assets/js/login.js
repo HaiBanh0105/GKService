@@ -44,7 +44,7 @@ loginForm.addEventListener("submit", async (e) => {
         loginBtnText.textContent = 'Đang đăng nhập...';
 
         //gọi API đăng nhập
-        const response = await fetch("http://localhost:8080/GKService/backend/auth/login.php", {
+        const response = await fetch('http://localhost:8080/GKService/getway/auth/login', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password })

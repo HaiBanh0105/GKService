@@ -101,7 +101,7 @@
         try {
             submitBtn.textContent = 'Đang gửi OTP qua email...';
             submitBtn.disabled = true;
-            const res = await fetch('http://localhost:8080/GKService/backend/payment/create_otp.php', {
+            const res = await fetch("http://localhost:8080/GKService/getway/payment/create_otp", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId: user.id, studentId, amount, userEmail: user.email })
@@ -136,7 +136,7 @@
                 submitBtn.textContent = 'Đang xác nhận OTP...';
 
                 try {
-                    const res2 = await fetch('http://localhost:8080/GKService/backend/payment/confirm_otp.php', {
+                    const res2 = await fetch('http://localhost:8080/GKService/getway/payment/confirm_otp', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ paymentId: data.paymentId, otp: otpInput.trim() })
