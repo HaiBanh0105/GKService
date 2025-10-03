@@ -56,7 +56,7 @@
 
     async function fetchTuitionByStudentId(studentId) {
         try {
-            const res = await fetch(`http://localhost:8080/GKService/backend/tuition/get_tuition.php?studentId=${encodeURIComponent(studentId)}`);
+            const res = await fetch(`http://localhost:8080/GKService/getway/tuition/get?studentId=${encodeURIComponent(studentId)}`);
             const data = await res.json();
             if (data.status === 'success') {
                 const t = data.tuition;

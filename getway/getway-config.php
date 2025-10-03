@@ -4,7 +4,9 @@ return [
         '/auth/login'         => ['service' => 'auth', 'path' => 'login.php', 'dir' => 'auth'],
         '/payment/create_otp' => ['service' => 'payment', 'path' => 'create_otp.php', 'dir' => 'common'],
         '/payment/confirm_otp'=> ['service' => 'payment', 'path' => 'confirm_otp.php', 'dir' => 'common'],
-        '/tuition/get'        => ['service' => 'tuition', 'path' => 'get_tuition.php', 'dir' => 'tuition']
+        '/tuition/get'        => ['service' => 'tuition', 'path' => 'get_tuition.php', 'dir' => 'tuition'],
+        '/auth/transactions' => ['service' => 'auth', 'path' => 'transactions.php', 'dir' => 'auth']
+
     ],
     'ports' => [
         'auth'    => '8001',

@@ -12,7 +12,7 @@
     //load lịch sử giao dịch từ database theo user id
     async function loadHistory() {
         try {
-            const res = await fetch(`http://localhost:8080/GKService/backend/auth/transactions.php?userId=${user.id}`);
+            const res = await fetch(`http://localhost:8080/GKService/getway/auth/transactions?userId=${user.id}`);
             const data = await res.json();
             const listEl = document.getElementById('txList');
             listEl.innerHTML = '';
