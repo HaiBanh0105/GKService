@@ -13,10 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // Phân tích URI để lấy route sau /getway/
-$uri = $_SERVER['REQUEST_URI'];
+$uri = strtok($_SERVER['REQUEST_URI'], '?');
 $base = '/GKService/getway/';
 $route = substr($uri, strpos($uri, $base) + strlen($base));
 $route = '/' . trim($route, '/');
+
 
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -37,5 +38,14 @@ $dir = $serviceInfo['dir'] ?? $serviceName;
 $targetUrl = "http://localhost:8080/GKService/backend/$dir/{$serviceInfo['path']}";
 
 // Gửi request đến service đích
-$response = forward($targetUrl, $method, json_decode($body, true));
+$query = $_SERVER['QUERY_STRING'];
+$fullUrl = $targetUrl . ($query ? "?$query" : '');
+
+$data = $method === 'POST' ? json_decode($body, true) : [];
+
+$response = forward($fullUrl, $method, $data);
 echo $response;
+
+error_log("Gateway gọi: $fullUrl với method $method");
+error_log("Payload: " . json_encode($data));
+error_log("Phản hồi: " . $response);
