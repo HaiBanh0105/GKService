@@ -1,136 +1,266 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hệ thống đăng ký thành công</title>
-    <link rel="stylesheet" href="../public/assets/css/index.css">
-</head>
-<body>
+    <link rel="stylesheet" href="../public/assets/css/index.css" />
+  </head>
+  <body>
     <div class="container">
-        <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
-            <h1>Học phí</h1>
-            <button id="logoutBtn" 
-                    style="padding: 8px 14px; border: 1px solid #e0e0e0; border-radius: 10px; background: #f7f7f9; color: #333; font-weight: 600; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                Đăng xuất
-            </button>
+      <div
+        class="header"
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <h1>Học phí</h1>
+        <button
+          id="logoutBtn"
+          style="
+            padding: 8px 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #f7f7f9;
+            color: #333;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+          "
+        >
+          Đăng xuất
+        </button>
+      </div>
+
+      <div class="form-container">
+        <div class="success-message" id="successMessage">
+          <strong>Đăng ký thành công!</strong> Thông tin của bạn đã được ghi
+          nhận.
         </div>
 
-        <div class="form-container">
-            <div class="success-message" id="successMessage">
-                <strong>Đăng ký thành công!</strong> Thông tin của bạn đã được ghi nhận.
+        <form id="registrationForm">
+          <!-- Section 1: Thông tin người nộp tiền -->
+          <div class="section">
+            <h2 class="section-title">Thông tin người nộp tiền</h2>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="submitterName"
+                  >Họ và tên <span class="required">*</span></label
+                >
+                <input
+                  type="text"
+                  id="submitterName"
+                  name="submitterName"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="submitterPhone"
+                  >Số điện thoại <span class="required">*</span></label
+                >
+                <input
+                  type="tel"
+                  id="submitterPhone"
+                  name="submitterPhone"
+                  required
+                />
+              </div>
             </div>
 
-            <form id="registrationForm">
-                <!-- Section 1: Thông tin người nộp tiền -->
-                <div class="section">
-                    <h2 class="section-title">Thông tin người nộp tiền</h2>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="submitterName">Họ và tên <span class="required">*</span></label>
-                            <input type="text" id="submitterName" name="submitterName" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="submitterPhone">Số điện thoại <span class="required">*</span></label>
-                            <input type="tel" id="submitterPhone" name="submitterPhone" required>
-                        </div>
-                    </div>
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="submitterEmail"
+                  >Địa chỉ email <span class="required">*</span></label
+                >
+                <input
+                  type="email"
+                  id="submitterEmail"
+                  name="submitterEmail"
+                  required
+                />
+              </div>
+            </div>
 
-                    <div class="form-row">
-                        <div class="form-group full-width">
-                            <label for="submitterEmail">Địa chỉ email <span class="required">*</span></label>
-                            <input type="email" id="submitterEmail" name="submitterEmail" required>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group full-width">
-                            <button type="button" id="viewHistoryBtn" class="continue-btn">Xem lịch sử giao dịch</button>
-                        </div>
-                    </div>
-
-                    <p style="color: #666; font-style: italic; margin-top: 10px;">
-                        <strong>Lưu ý:</strong> Các thông tin này hệ thống phải tự động điền cho người dùng, và khóa lại để người dùng không được chỉnh sửa.
-                    </p>
-                </div>
-
-                <!-- Section 2: Thông tin học phí -->
-                <div class="section">
-                    <h2 class="section-title">Thông tin học phí</h2>
-                    
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 1; min-width: 250px;">
-                            <label for="studentId">Mã số sinh viên <span class="required">*</span></label>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text" id="studentId" name="studentId" required style="flex: 1;">
-                                <button type="button" id="searchTuitionBtn" style="white-space: nowrap; padding: 0 16px; border-radius: 8px; border: 2px solid #667eea; background: #fff; color: #667eea; font-weight: 600; cursor: pointer;">Tìm học phí</button>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="studentName">Họ tên sinh viên <span class="required">*</span></label>
-                            <input type="text" id="studentName" name="studentName" required>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="tuitionStatus">Trạng thái học phí</label>
-                            <input type="text" id="tuitionStatus" name="tuitionStatus" readonly style="background: #f5f5f5;">
-                        </div>
-                        <div class="form-group">
-                            <label for="cardNumber">Số tiền cần nộp <span class="required">*</span></label>
-                            <input type="number" id="feeAmount" name="feeAmount" required placeholder="Nhập số tiền VND">
-                        </div>
-                    </div>
-
-                    <div class="banking-info">
-                        <h4 style="margin-bottom: 15px; color: #667eea;">Thông tin chuyển khoản</h4>
-                        <p><strong>Ngân hàng:</strong> iBanking (được thiết lập tự động)</p>
-                        <p><strong>Số tài khoản:</strong> <span id="accountNumber">1234567890</span></p>
-                        <p><strong>Tên tài khoản:</strong> TDTU - Hệ thống thanh toán học phí</p>
-                        <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">
-                            Hệ thống sẽ gửi mã OTP tới email người nộp tiền. Vui lòng kiểm tra hộp thư.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Section 3: Thông tin thanh toán -->
-                <div class="section">
-                    <h2 class="section-title">Thông tin thanh toán</h2>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="payerBalance">Số dư khả dụng của người nộp tiền</label>
-                            <input type="number" id="payerBalance" name="payerBalance" readonly value="5000000" style="background: #f5f5f5;">
-                        </div>
-                        <div class="form-group">
-                            <label for="tuitionFee">Số tiền học phí cần thanh toán</label>
-                            <input type="number" id="tuitionFee" name="tuitionFee" readonly style="background: #f5f5f5;">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="agreements">Các thỏa thuận và điều khoản</label>
-                        <textarea id="agreements" name="agreements" rows="4" readonly style="background: #f5f5f5;">
-Hệ thống chỉ cho phép thanh toán toàn bộ giá trị của phần học phí cần thanh toán. Số tiền học phí cần thanh toán phải nhỏ hơn hoặc bằng số dư khả dụng của người nộp tiền.
-                        </textarea>
-                    </div>
-
-                    <div class="fee-display">
-                        <h3>Tổng số tiền cần thanh toán</h3>
-                        <div class="fee-amount" id="totalAmount">0 VND</div>
-                        <p>Vui lòng kiểm tra lại thông tin trước khi xác nhận</p>
-                    </div>
-                </div>
-
-                <button type="submit" class="submit-btn" id="submitBtn">
-                    Xác nhận giao dịch
+            <div class="form-row">
+              <div class="form-group full-width">
+                <button type="button" id="viewHistoryBtn" class="continue-btn">
+                  Xem lịch sử giao dịch
                 </button>
-            </form>
-        </div>
+              </div>
+            </div>
+
+            <p style="color: #666; font-style: italic; margin-top: 10px">
+              <strong>Lưu ý:</strong> Các thông tin này hệ thống phải tự động
+              điền cho người dùng, và khóa lại để người dùng không được chỉnh
+              sửa.
+            </p>
+          </div>
+
+          <!-- Section 2: Thông tin học phí -->
+          <div class="section">
+            <h2 class="section-title">Thông tin học phí</h2>
+
+            <div class="form-row">
+              <div class="form-group" style="flex: 1; min-width: 250px">
+                <label for="studentId"
+                  >Mã số sinh viên <span class="required">*</span></label
+                >
+                <div style="display: flex; gap: 8px">
+                  <input
+                    type="text"
+                    id="studentId"
+                    name="studentId"
+                    required
+                    style="flex: 1"
+                  />
+                  <button
+                    type="button"
+                    id="searchTuitionBtn"
+                    style="
+                      white-space: nowrap;
+                      padding: 0 16px;
+                      border-radius: 8px;
+                      border: 2px solid #667eea;
+                      background: #fff;
+                      color: #667eea;
+                      font-weight: 600;
+                      cursor: pointer;
+                    "
+                  >
+                    Tìm học phí
+                  </button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="studentName"
+                  >Họ tên sinh viên <span class="required">*</span></label
+                >
+                <input
+                  type="text"
+                  id="studentName"
+                  name="studentName"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="tuitionStatus">Trạng thái học phí</label>
+                <input
+                  type="text"
+                  id="tuitionStatus"
+                  name="tuitionStatus"
+                  readonly
+                  style="background: #f5f5f5"
+                />
+              </div>
+              <div class="form-group">
+                <label for="cardNumber"
+                  >Số tiền cần nộp <span class="required">*</span></label
+                >
+                <input
+                  type="number"
+                  id="feeAmount"
+                  name="feeAmount"
+                  required
+                  placeholder="Nhập số tiền VND"
+                />
+              </div>
+            </div>
+
+            <div class="banking-info">
+              <h4 style="margin-bottom: 15px; color: #667eea">
+                Thông tin chuyển khoản
+              </h4>
+              <p>
+                <strong>Ngân hàng:</strong> iBanking (được thiết lập tự động)
+              </p>
+              <p>
+                <strong>Số tài khoản:</strong>
+                <span id="accountNumber">1234567890</span>
+              </p>
+              <p>
+                <strong>Tên tài khoản:</strong> TDTU - Hệ thống thanh toán học
+                phí
+              </p>
+              <p style="color: #666; font-size: 0.9rem; margin-top: 10px">
+                Hệ thống sẽ gửi mã OTP tới email người nộp tiền. Vui lòng kiểm
+                tra hộp thư.
+              </p>
+            </div>
+          </div>
+
+          <!-- Section 3: Thông tin thanh toán -->
+          <div class="section">
+            <h2 class="section-title">Thông tin thanh toán</h2>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="payerBalance"
+                  >Số dư khả dụng của người nộp tiền</label
+                >
+                <input
+                  type="number"
+                  id="payerBalance"
+                  name="payerBalance"
+                  readonly
+                  value="5000000"
+                  style="background: #f5f5f5"
+                />
+              </div>
+              <div class="form-group">
+                <label for="tuitionFee">Số tiền học phí cần thanh toán</label>
+                <input
+                  type="number"
+                  id="tuitionFee"
+                  name="tuitionFee"
+                  readonly
+                  style="background: #f5f5f5"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="agreements">Các thỏa thuận và điều khoản</label>
+              <textarea
+                id="agreements"
+                name="agreements"
+                rows="4"
+                readonly
+                style="background: #f5f5f5"
+              >
+Hệ thống chỉ cho phép thanh toán toàn bộ giá trị của phần học phí cần thanh toán. Số tiền học phí cần thanh toán phải nhỏ hơn hoặc bằng số dư khả dụng của người nộp tiền.
+                        </textarea
+              >
+            </div>
+
+            <div class="fee-display">
+              <h3>Tổng số tiền cần thanh toán</h3>
+              <div class="fee-amount" id="totalAmount">0 VND</div>
+              <p>Vui lòng kiểm tra lại thông tin trước khi xác nhận</p>
+            </div>
+          </div>
+          <div class="button-row">
+            <button
+              type="button"
+              class="submit-btn"
+              id="resendOtpBtn"
+              style="display: none; background: #ff9800"
+            >
+              Gửi lại OTP
+            </button>
+            <button type="submit" class="submit-btn" id="submitBtn">
+              Xác nhận giao dịch
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <script src="../public/assets/js/index.js"></script>
-</body>
+  </body>
 </html>

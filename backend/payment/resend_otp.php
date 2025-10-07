@@ -47,10 +47,6 @@ try {
         echo json_encode(['status' => 'error', 'message' => 'Không tìm thấy học phí']);
         exit;
     }
-    if ($tuitionRow['Status'] !== 'Unpaid') {
-        echo json_encode(['status' => 'error', 'message' => 'Chỉ cho phép tạo OTP khi học phí ở trạng thái Chưa nộp']);
-        exit;
-    }
 
     // Tạo bản ghi thanh toán và OTP
     $paymentPdo->beginTransaction();
@@ -64,15 +60,10 @@ try {
 
     $paymentPdo->commit();
 
-    // Cập nhật trạng thái học phí sang Processing
-    $tuitionPdo->beginTransaction();
-    $upd = $tuitionPdo->prepare("UPDATE TuitionFee SET Status = 'Processing' WHERE StudentID = :sid");
-    $upd->execute([':sid' => $studentId]);
-    $tuitionPdo->commit();
 
     // Gửi email OTP
-    $subject = 'Mã OTP xác nhận thanh toán học phí';
-    $body = '<p>Mã OTP của bạn là: <strong>' . htmlspecialchars($otp) . '</strong></p><p>OTP có hiệu lực trong 5 phút.</p>';
+    $subject = 'Gửi lại mã OTP cho thanh toán học phí';
+    $body = '<p>Mã OTP mới của bạn là: <strong>' . htmlspecialchars($otp) . '</strong></p><p>OTP có hiệu lực trong 5 phút.</p>';
     sendEmail($userEmail, $subject, $body);
 
     echo json_encode(['status' => 'success', 'paymentId' => $paymentId]);

@@ -20,6 +20,7 @@
     const searchTuitionBtn = document.getElementById('searchTuitionBtn');
     const tuitionStatusInput = document.getElementById('tuitionStatus');
     const viewHistoryBtn = document.getElementById('viewHistoryBtn');
+    const resendOtpBtn = document.getElementById('resendOtpBtn');
 
     const statusMap = { 'Completed': 'Hoàn thành', 'Processing': 'Đang xử lý', 'Unpaid': 'Chưa nộp' };
     let currentTuitionStatus = null;
@@ -74,7 +75,9 @@
                 feeAmountInput.readOnly = true;
                 feeAmountInput.style.background = '#f5f5f5';
                 updateTotals();
-            } else {
+            } 
+            
+            else {
                 alert(data.message || 'Không tìm thấy học phí');
                 studentNameInput.value = '';
                 currentTuitionStatus = null;
@@ -94,9 +97,45 @@
         const sid = studentIdInput.value.trim();
         if (!sid) { alert('Vui lòng nhập mã số sinh viên'); return; }
         fetchTuitionByStudentId(sid);
+        if(currentTuitionStatus === 'Processing' && currentTuitionStatus !== null){
+            resendOtpBtn.style.display = 'inline-block';
+            }   
+        else{
+            resendOtpBtn.style.display = 'none';}
     });
 
     updateTotals();
+
+    resendOtpBtn.addEventListener('click', async function (e) {
+    e.preventDefault();
+    const amount = parseInt(feeAmountInput.value, 10) || 0;
+    const studentId = studentIdInput.value.trim();
+
+    try {
+        const res = await fetch('http://localhost/GKService/getway/payment/resend_otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: user.id,
+                studentId,
+                amount,
+                userEmail: user.email
+            })
+        });
+
+        const data = await res.json();
+        if (data.status === 'success') {
+            localStorage.setItem('pendingPaymentId', data.paymentId);
+            alert('OTP mới đã được gửi đến email.');
+        } else {
+            alert(data.message || 'Không gửi được OTP mới');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Lỗi kết nối dịch vụ thanh toán');
+    }
+});
+
 
     document.getElementById('registrationForm').addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -140,6 +179,7 @@
             localStorage.setItem('pendingPaymentId', data.paymentId);
 
             // Cập nhật trạng thái học phí sang "Đang xử lý"
+            resendOtpBtn.style.display = 'inline-block';
             currentTuitionStatus = 'Processing';
             tuitionStatusInput.value = statusMap[currentTuitionStatus];
             submitBtn.disabled = false;
