@@ -20,8 +20,10 @@ USE TuitionFee;
 
 INSERT INTO TuitionFee (StudentID, StudentName, Amount, DueDate, Status)
 VALUES
-('SV001', 'Tran Thi B', 2500000.00, '2025-10-31', 'Unpaid'),
-('SV002', 'Le Van C', 3500000.00, '2025-10-31', 'Processing'),
-('SV003', 'Pham D', 1500000.00, '2025-10-31', 'Completed')
+('SV001', 'Tran Thi B', 250000.00, '2025-10-31', 'Unpaid'),
+('SV002', 'Le Van C', 350000.00, '2025-10-31', 'Unpaid'),
+('SV003', 'Pham D', 150000.00, '2025-10-31', 'Unpaid'),
+('SV004', 'Pham H', 150000.00, '2025-10-31', 'Unpaid'),
+('SV005', 'Pham K', 150000.00, '2025-10-31', 'Unpaid')
 ON DUPLICATE KEY UPDATE
 StudentName = VALUES(StudentName), Amount = VALUES(Amount), DueDate = VALUES(DueDate), Status = VALUES(Status);

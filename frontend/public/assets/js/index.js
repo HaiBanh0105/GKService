@@ -40,10 +40,17 @@
         const balance = parseInt(balanceInput.value, 10) || 0;
         const canPay = amount > 0 && amount <= balance && currentTuitionStatus === 'Unpaid';
         submitBtn.disabled = !canPay;
-        if (currentTuitionStatus && currentTuitionStatus !== 'Unpaid') {
+        
+        if(currentTuitionStatus === 'Processing'){
+            submitBtn.disabled = false;
+            submitBtn.style.background = '#e7dc3cff';
+            submitBtn.textContent = 'Nhập otp';
+        }
+        else if (currentTuitionStatus && currentTuitionStatus !== 'Unpaid') {
             submitBtn.style.background = '#bdc3c7';
-            submitBtn.textContent = 'Không thể thanh toán';
-        } else if (amount > balance) {
+            submitBtn.textContent = 'Không thể thanh toán';  
+        } 
+        else if (amount > balance) {
             submitBtn.style.background = '#e74c3c';
             submitBtn.textContent = 'Số dư không đủ';
         } else {
@@ -56,7 +63,7 @@
 
     async function fetchTuitionByStudentId(studentId) {
         try {
-            const res = await fetch(`http://localhost:8080/GKService/getway/tuition/get?studentId=${encodeURIComponent(studentId)}`);
+            const res = await fetch(`http://localhost/GKService/getway/tuition/get?studentId=${encodeURIComponent(studentId)}`);
             const data = await res.json();
             if (data.status === 'success') {
                 const t = data.tuition;
@@ -91,21 +98,36 @@
 
     updateTotals();
 
-    document.getElementById('registrationForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const amount = parseInt(feeAmountInput.value, 10) || 0;
-        const balance = parseInt(balanceInput.value, 10) || 0;
-        const studentId = studentIdInput.value.trim();
-        if (amount <= 0 || amount > balance || !studentId) { return; }
+    document.getElementById('registrationForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-        try {
+    const amount = parseInt(feeAmountInput.value, 10) || 0;
+    const balance = parseInt(balanceInput.value, 10) || 0;
+    const studentId = studentIdInput.value.trim();
+    let otpInput = '';
+    let otpValid = false;
+
+    if (amount <= 0 || amount > balance || !studentId) return;
+
+    try {
+        // -------------------------------
+        // B1: TRẠNG THÁI CHƯA THANH TOÁN → GỬI OTP
+        // -------------------------------
+        if (currentTuitionStatus === 'Unpaid') {
             submitBtn.textContent = 'Đang gửi OTP qua email...';
             submitBtn.disabled = true;
-            const res = await fetch('http://localhost:8080/GKService/getway/payment/create_otp', {
+
+            const res = await fetch('http://localhost/GKService/getway/payment/create_otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: user.id, studentId, amount, userEmail: user.email })
+                body: JSON.stringify({
+                    userId: user.id,
+                    studentId,
+                    amount,
+                    userEmail: user.email
+                })
             });
+
             const data = await res.json();
             if (data.status !== 'success') {
                 alert(data.message || 'Không tạo được OTP');
@@ -114,91 +136,94 @@
                 return;
             }
 
-            // Cập nhật trạng thái ban đầu
+            // Lưu paymentId vào localStorage để xác nhận OTP sau
+            localStorage.setItem('pendingPaymentId', data.paymentId);
+
+            // Cập nhật trạng thái học phí sang "Đang xử lý"
             currentTuitionStatus = 'Processing';
             tuitionStatusInput.value = statusMap[currentTuitionStatus];
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Đang xử lý';
-            submitBtn.style.background = '#bdc3c7';
-
-            // Cho phép nhập lại OTP nếu sai
-            let otpValid = false;
-            let attempts = 0;
-            const maxAttempts = 3;
-
-                while (!otpValid && attempts < maxAttempts) {
-                const otpInput = prompt('Một mã OTP đã được gửi tới email của bạn. Vui lòng nhập OTP:') || '';
-                if (!otpInput) {
-                    alert('Bạn chưa nhập OTP');
-                    break;
-                }
-
-                submitBtn.textContent = 'Đang xác nhận OTP...';
-
-                try {
-                    const res2 = await fetch('http://localhost:8080/GKService/getway/payment/confirm_otp', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ paymentId: data.paymentId, otp: otpInput.trim() })
-                    });
-                    const data2 = await res2.json();
-
-                    if (data2.status === 'success') {
-                        otpValid = true;
-
-                        // Cập nhật số dư
-                        if (data2.user) {
-                            localStorage.setItem('user', JSON.stringify(data2.user));
-                            balanceInput.value = Math.floor(data2.user.balance || 0);
-                            updateTotals();
-                        }
-
-                        // Hoàn tất giao dịch
-                        currentTuitionStatus = 'Completed';
-                        tuitionStatusInput.value = statusMap[currentTuitionStatus];
-
-                        const success = document.getElementById('successMessage');
-                        success.style.display = 'block';
-                        success.scrollIntoView({ behavior: 'smooth' });
-                        submitBtn.textContent = 'Giao dịch thành công';
-                        submitBtn.style.background = '#27ae60';
-                    } else {
-                        alert(data2.message || 'OTP không hợp lệ');
-                        attempts++;
-                    }
-                } catch (err) {
-                    alert('Lỗi mạng hoặc máy chủ không phản hồi');
-                    break;
-                }
-            }
-
-            if (!otpValid) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Xác nhận giao dịch';
-                submitBtn.style.background = '#3498db';
-            }
-            else{
-        
-            // load lại form sau 0.6s
-            setTimeout(() => {
-                studentIdInput.value = '';
-                studentNameInput.value = '';
-                tuitionStatusInput.value = '';
-                feeAmountInput.value = '';
-                feeAmountInput.readOnly = false;
-                feeAmountInput.style.background = '';
-                tuitionFeeInput.value = '';
-                totalAmountEl.textContent = '0 VND';
-                currentTuitionStatus = null;
-                updateTotals();
-            }, 600);}
-        } catch (err) {
-            console.error(err);
-            alert('Lỗi kết nối dịch vụ thanh toán');
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Xác nhận giao dịch';
+            submitBtn.style.background = '#e7dc3c';
+            submitBtn.textContent = 'Nhập OTP';
+            alert('Một mã OTP đã được gửi đến email của bạn. Vui lòng nhấn lại "Nhập OTP" để xác nhận.');
+            return; // kết thúc ở bước tạo OTP
         }
-    });
+
+        // -------------------------------
+        // B2: TRẠNG THÁI ĐANG XỬ LÝ → NHẬP OTP VÀ XÁC NHẬN
+        // -------------------------------
+        if (currentTuitionStatus === 'Processing') {
+            const paymentId = localStorage.getItem('pendingPaymentId');
+            if (!paymentId) {
+                alert('Không tìm thấy mã giao dịch. Vui lòng thực hiện lại.');
+                return;
+            }
+
+            otpInput = prompt('Vui lòng nhập mã OTP được gửi đến email của bạn:') || '';
+            if (!otpInput.trim()) {
+                alert('Bạn chưa nhập OTP');
+                return;
+            }
+
+            submitBtn.textContent = 'Đang xác nhận OTP...';
+            submitBtn.disabled = true;
+
+            const res2 = await fetch('http://localhost/GKService/getway/payment/confirm_otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentId: paymentId, otp: otpInput.trim() })
+            });
+
+            const data2 = await res2.json();
+
+            if (data2.status === 'success') {
+                otpValid = true;
+                localStorage.removeItem('pendingPaymentId');
+
+                // Cập nhật số dư mới
+                if (data2.user) {
+                    localStorage.setItem('user', JSON.stringify(data2.user));
+                    balanceInput.value = Math.floor(data2.user.balance || 0);
+                }
+
+                // Cập nhật trạng thái học phí hoàn thành
+                currentTuitionStatus = 'Completed';
+                tuitionStatusInput.value = statusMap[currentTuitionStatus];
+
+                const success = document.getElementById('successMessage');
+                success.style.display = 'block';
+                success.scrollIntoView({ behavior: 'smooth' });
+
+                submitBtn.textContent = 'Giao dịch thành công';
+                submitBtn.style.background = '#27ae60';
+
+                // Reset form sau 0.6s
+                setTimeout(() => {
+                    studentIdInput.value = '';
+                    studentNameInput.value = '';
+                    tuitionStatusInput.value = '';
+                    feeAmountInput.value = '';
+                    feeAmountInput.readOnly = false;
+                    feeAmountInput.style.background = '';
+                    tuitionFeeInput.value = '';
+                    totalAmountEl.textContent = '0 VND';
+                    currentTuitionStatus = null;
+                    updateTotals();
+                }, 600);
+            } else {
+                alert(data2.message || 'OTP không hợp lệ hoặc hết hạn');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Nhập OTP lại';
+                submitBtn.style.background = '#e67e22';
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Lỗi kết nối dịch vụ thanh toán');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Xác nhận giao dịch';
+    }
+});
 })();
         const logoutBtn = document.getElementById('logoutBtn');
         logoutBtn.addEventListener('click', () => {

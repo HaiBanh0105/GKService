@@ -35,7 +35,7 @@ USE user;
 
 -- Ensure a plaintext user exists
 INSERT INTO User (Username, Password, FullName, Phone, Email, Address, AvailableBalance)
-SELECT 'vodathai', '123456', 'Vo Dat Hai', '0772663776', 'vodathai91thcsduclap@gmail.com', '700 Nguyen Van Linh, District 7', 5000000.00
+SELECT 'vodathai', '123456', 'Vo Dat Hai', '0772663776', 'vodathai91thcsduclap@gmail.com', '700 Nguyen Van Linh, District 7', 10000000.00
 WHERE NOT EXISTS (
     SELECT 1 FROM User WHERE Username = 'tdtu_user'
 );

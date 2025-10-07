@@ -48,7 +48,7 @@ try {
     $updOtp = $paymentPdo->prepare("UPDATE OTPs SET IsUsed = 1 WHERE OtpID = :id");
     $updOtp->execute([':id'=>(int)$row['OtpID']]);
 
-    // Trừ tiền trong tài khoản user
+    
     $userPdo->beginTransaction();
     $balanceStmt = $userPdo->prepare("SELECT UserID, Username, FullName, Phone, Email, AvailableBalance FROM User WHERE UserID = :uid FOR UPDATE");
     $balanceStmt->execute([':uid'=>$userId]);
@@ -56,6 +56,8 @@ try {
     if (!$balRow) { throw new Exception('User not found'); }
     $currentBal = (float)$balRow['AvailableBalance'];
     if ($currentBal < $amount) { throw new Exception('Số dư không đủ'); }
+
+    // Trừ tiền trong tài khoản user
     $newBal = $currentBal - $amount;
     $updBal = $userPdo->prepare("UPDATE User SET AvailableBalance = :b WHERE UserID = :uid");
     $updBal->execute([':b'=>$newBal, ':uid'=>$userId]);

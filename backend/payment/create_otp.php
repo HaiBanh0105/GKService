@@ -25,11 +25,11 @@ if ($userId <= 0 || $studentId === '' || $amount <= 0 || $userEmail === '') {
 }
 
 try {
-    // Open Tuition DB to check and update status
+    // Kết nối đến DB học phí để kiểm tra trạng thái học phí
     $tuitionPdo = new PDO('mysql:host=localhost;dbname=TuitionFee;charset=utf8', 'root', '');
     $tuitionPdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Ensure tuition is Unpaid
+    // Kiểm tra trạng thái học phí
     $checkStmt = $tuitionPdo->prepare("SELECT Status FROM TuitionFee WHERE StudentID = :sid LIMIT 1");
     $checkStmt->execute([':sid' => $studentId]);
     $tuitionRow = $checkStmt->fetch(PDO::FETCH_ASSOC);
@@ -42,7 +42,7 @@ try {
         exit;
     }
 
-    // Begin transaction on payment DB
+    // Tạo bản ghi thanh toán và OTP
     $paymentPdo->beginTransaction();
     $stmt = $paymentPdo->prepare("INSERT INTO Payment(UserID, StudentID, Amount) VALUES (:uid, :sid, :amt)");
     $stmt->execute([':uid'=>$userId, ':sid'=>$studentId, ':amt'=>$amount]);
@@ -54,13 +54,13 @@ try {
 
     $paymentPdo->commit();
 
-    // Update tuition status to Processing
+    // Cập nhật trạng thái học phí sang Processing
     $tuitionPdo->beginTransaction();
     $upd = $tuitionPdo->prepare("UPDATE TuitionFee SET Status = 'Processing' WHERE StudentID = :sid");
     $upd->execute([':sid' => $studentId]);
     $tuitionPdo->commit();
 
-    // Send email
+    // Gửi email OTP
     $subject = 'Mã OTP xác nhận thanh toán học phí';
     $body = '<p>Mã OTP của bạn là: <strong>' . htmlspecialchars($otp) . '</strong></p><p>OTP có hiệu lực trong 5 phút.</p>';
     sendEmail($userEmail, $subject, $body);

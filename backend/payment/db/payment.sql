@@ -1,8 +1,8 @@
 -- Xóa database cũ nếu có
-DROP DATABASE IF EXISTS Paymen;
+DROP DATABASE IF EXISTS Payment;
 -- Tạo database mới
-CREATE DATABASE Paymen;
-USE Paymen;
+CREATE DATABASE Payment;
+USE Payment;
 
 -- Bảng Payment (thanh toán)
 CREATE TABLE Payment (
