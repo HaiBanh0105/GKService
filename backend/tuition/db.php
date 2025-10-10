@@ -6,6 +6,7 @@ $password = "";
 
 try {
     $tuitionPdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+    $tuitionPdo->exec("SET time_zone = '+07:00'");
     $tuitionPdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
     http_response_code(500);
