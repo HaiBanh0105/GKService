@@ -48,7 +48,7 @@ try {
         exit;
     }
     if (!is_null($row['ExpiredAt']) && strtotime($row['ExpiredAt']) < time()) {
-        echo json_encode(['status' => 'error', 'message' => 'OTP đã hết hạn']);
+        echo json_encode(['status' => 'error', 'message' => 'OTP đã hết hạn, vui lòng tạo OTP mới']);
         exit;
     }
 

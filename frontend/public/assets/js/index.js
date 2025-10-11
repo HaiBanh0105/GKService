@@ -44,12 +44,14 @@
         
         if(currentTuitionStatus === 'Processing'){
             submitBtn.disabled = false;
-            submitBtn.style.background = '#e7dc3cff';
+            submitBtn.style.background = '#c59328ff';
             submitBtn.textContent = 'Nhập otp';
+            resendOtpBtn.style.display = 'inline-block';
         }
         else if (currentTuitionStatus && currentTuitionStatus !== 'Unpaid') {
             submitBtn.style.background = '#bdc3c7';
             submitBtn.textContent = 'Không thể thanh toán';  
+            resendOtpBtn.style.display = 'none';
         } 
         else if (amount > balance) {
             submitBtn.style.background = '#e74c3c';
@@ -57,8 +59,9 @@
         } else {
             submitBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
             submitBtn.textContent = 'Xác nhận giao dịch';
+            resendOtpBtn.style.display = 'none';
         }
-    };
+    };  
 
     feeAmountInput.addEventListener('input', updateTotals);
 
@@ -97,11 +100,11 @@
         const sid = studentIdInput.value.trim();
         if (!sid) { alert('Vui lòng nhập mã số sinh viên'); return; }
         fetchTuitionByStudentId(sid);
-        if(currentTuitionStatus === 'Processing' && currentTuitionStatus !== null){
-            resendOtpBtn.style.display = 'inline-block';
-            }   
-        else{
-            resendOtpBtn.style.display = 'none';}
+        // if(currentTuitionStatus === 'Processing' && currentTuitionStatus !== null){
+        //     resendOtpBtn.style.display = 'inline-block';
+        //     }   
+        // else{
+        //     resendOtpBtn.style.display = 'none';}
     });
 
     updateTotals();
@@ -110,8 +113,10 @@
     e.preventDefault();
     const amount = parseInt(feeAmountInput.value, 10) || 0;
     const studentId = studentIdInput.value.trim();
+    
 
     try {
+        resendOtpBtn.textContent = 'Đang gửi lại OTP...';
         const res = await fetch('http://localhost/GKService/getway/payment/resend_otp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -123,8 +128,15 @@
             })
         });
 
+        
         const data = await res.json();
         if (data.status === 'success') {
+            resendOtpBtn.style.background = '#3ce76dff';
+            resendOtpBtn.textContent = 'OTP đã được gửi lại';
+            setTimeout(() => { 
+                resendOtpBtn.textContent = 'Gửi lại OTP'; 
+                resendOtpBtn.style.background = '#e67e22';
+            }, 9000);
             localStorage.setItem('pendingPaymentId', data.paymentId);
             alert('OTP mới đã được gửi đến email.');
         } else {
@@ -183,7 +195,7 @@
             currentTuitionStatus = 'Processing';
             tuitionStatusInput.value = statusMap[currentTuitionStatus];
             submitBtn.disabled = false;
-            submitBtn.style.background = '#e7dc3c';
+            submitBtn.style.background = '#c59328ff';
             submitBtn.textContent = 'Nhập OTP';
             alert('Một mã OTP đã được gửi đến email của bạn. Vui lòng nhấn lại "Nhập OTP" để xác nhận.');
             return; // kết thúc ở bước tạo OTP
@@ -219,6 +231,8 @@
             if (data2.status === 'success') {
                 otpValid = true;
                 localStorage.removeItem('pendingPaymentId');
+                resendOtpBtn.style.display = 'none';
+                resendOtpBtn.textContent = 'Gửi lại OTP';
 
                 // Cập nhật số dư mới
                 if (data2.user) {
@@ -254,7 +268,7 @@
                 alert(data2.message || 'OTP không hợp lệ hoặc hết hạn');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Nhập OTP lại';
-                submitBtn.style.background = '#e67e22';
+                submitBtn.style.background = '#c59328ff';
             }
         }
     } catch (err) {

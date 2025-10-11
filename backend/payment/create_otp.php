@@ -61,7 +61,7 @@ try {
     $paymentId = (int)$paymentPdo->lastInsertId();
 
     $otp = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-    $stmt2 = $paymentPdo->prepare("INSERT INTO OTPs(PaymentID, Code, ExpiredAt) VALUES (:pid, :code, DATE_ADD(NOW(), INTERVAL 30 second))");
+    $stmt2 = $paymentPdo->prepare("INSERT INTO OTPs(PaymentID, Code, ExpiredAt) VALUES (:pid, :code, DATE_ADD(NOW(), INTERVAL 5 MINUTE))");
     $stmt2->execute([':pid' => $paymentId, ':code' => $otp]);
 
     $paymentPdo->commit();
