@@ -35,18 +35,10 @@ if ($userId <= 0 || $studentId === '' || $amount <= 0 || $userEmail === '') {
 }
 
 try {
-    // Kết nối đến DB học phí để kiểm tra trạng thái học phí
-    $tuitionPdo = new PDO('mysql:host=localhost;dbname=TuitionFee;charset=utf8', 'root', '');
-    $tuitionPdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Kiểm tra trạng thái học phí
-    $checkStmt = $tuitionPdo->prepare("SELECT Status FROM TuitionFee WHERE StudentID = :sid LIMIT 1");
-    $checkStmt->execute([':sid' => $studentId]);
-    $tuitionRow = $checkStmt->fetch(PDO::FETCH_ASSOC);
-    if (!$tuitionRow) {
-        echo json_encode(['status' => 'error', 'message' => 'Không tìm thấy học phí']);
-        exit;
-    }
+    // Vô hiệu hóa OTP cũ chưa dùng (nếu có)
+    $disableAllStmt = $paymentPdo->prepare("UPDATE OTPs SET IsUsed = 3 WHERE IsUsed = 0");
+    $disableAllStmt->execute();
 
     // Tạo bản ghi thanh toán và OTP
     $paymentPdo->beginTransaction();
@@ -59,6 +51,7 @@ try {
     $stmt2->execute([':pid' => $paymentId, ':code' => $otp]);
 
     $paymentPdo->commit();
+
 
 
     // Gửi email OTP

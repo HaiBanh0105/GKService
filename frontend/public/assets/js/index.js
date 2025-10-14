@@ -117,6 +117,8 @@
 
     try {
         resendOtpBtn.textContent = 'Đang gửi lại OTP...';
+        resendOtpBtn.disabled = true;
+        submitBtn.disabled = true;
         const res = await fetch('http://localhost/GKService/getway/payment/resend_otp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -133,10 +135,14 @@
         if (data.status === 'success') {
             resendOtpBtn.style.background = '#3ce76dff';
             resendOtpBtn.textContent = 'OTP đã được gửi lại';
+            submitBtn.disabled = false;
+            
             setTimeout(() => { 
                 resendOtpBtn.textContent = 'Gửi lại OTP'; 
+                resendOtpBtn.disabled = false;
                 resendOtpBtn.style.background = '#e67e22';
             }, 9000);
+            
             localStorage.setItem('pendingPaymentId', data.paymentId);
             alert('OTP mới đã được gửi đến email.');
         } else {
@@ -247,7 +253,7 @@
                 const success = document.getElementById('successMessage');
                 success.style.display = 'block';
                 success.scrollIntoView({ behavior: 'smooth' });
-
+                
                 submitBtn.textContent = 'Giao dịch thành công';
                 submitBtn.style.background = '#27ae60';
 
@@ -264,6 +270,9 @@
                     currentTuitionStatus = null;
                     updateTotals();
                 }, 600);
+                setTimeout(() => { 
+                    success.style.display = 'none';
+                }, 5000);
             } else {
                 alert(data2.message || 'OTP không hợp lệ hoặc hết hạn');
                 submitBtn.disabled = false;

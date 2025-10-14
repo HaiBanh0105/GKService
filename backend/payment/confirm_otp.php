@@ -56,11 +56,6 @@ try {
     $studentId = $row['StudentID'];
     $amount = (float)$row['Amount'];
 
-    // Kết nối đến các DB cần thiết
-    $userPdo = new PDO('mysql:host=localhost;dbname=user;charset=utf8', 'root', '');
-    $userPdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $tuitionPdo = new PDO('mysql:host=localhost;dbname=TuitionFee;charset=utf8', 'root', '');
-    $tuitionPdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Bắt đầu giao dịch
     $paymentPdo->beginTransaction();
@@ -70,38 +65,95 @@ try {
     $updOtp->execute([':id' => (int)$row['OtpID']]);
 
 
-    $userPdo->beginTransaction();
-    $balanceStmt = $userPdo->prepare("SELECT UserID, Username, FullName, Phone, Email, AvailableBalance FROM User WHERE UserID = :uid FOR UPDATE");
-    $balanceStmt->execute([':uid' => $userId]);
-    $balRow = $balanceStmt->fetch(PDO::FETCH_ASSOC);
-    if (!$balRow) {
-        throw new Exception('User not found');
+    // lấy thông tin người dùng từ service user
+    $infoUrl = "http://localhost/GKService/getway/auth/get_user_info?userId=" . urlencode($userId);
+    $ch = curl_init($infoUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    $userInfo = json_decode($response, true);
+    if (!is_array($userInfo) || $userInfo['status'] !== 'success') {
+        throw new Exception('Không lấy được thông tin người dùng');
     }
-    $currentBal = (float)$balRow['AvailableBalance'];
-    if ($currentBal < $amount) {
-        throw new Exception('Số dư không đủ');
+    $balRow = $userInfo['user'];
+
+    $deductUrl = "http://localhost/GKService/getway/auth/deduct_balance";
+    $payload = json_encode(['userId' => $userId, 'amount' => $amount]);
+
+    $ch = curl_init($deductUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    $result = json_decode($response, true);
+    if (!is_array($result) || $result['status'] !== 'success') {
+        throw new Exception($result['message'] ?? 'Không trừ được số dư');
     }
 
-    // Trừ tiền trong tài khoản user
-    $newBal = $currentBal - $amount;
-    $updBal = $userPdo->prepare("UPDATE User SET AvailableBalance = :b WHERE UserID = :uid");
-    $updBal->execute([':b' => $newBal, ':uid' => $userId]);
+    $newBal = (float)$result['newBalance'];
 
 
-    $tStmt = $tuitionPdo->prepare("SELECT StudentName FROM TuitionFee WHERE StudentID = :sid");
-    $tStmt->execute([':sid' => $studentId]);
-    $tInfo = $tStmt->fetch(PDO::FETCH_ASSOC);
+    // lấy thông tin sinh viên từ service học phí
+    $infoUrl = "http://localhost/GKService/getway/tuition/get?studentId=" . urlencode($studentId);
+    $ch = curl_init($infoUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    curl_close($ch);
 
-    // thêm lịch sử giao dịch
-    $insHist = $userPdo->prepare("INSERT INTO TransactionHistory(UserID, StudentID, StudentName, Amount) VALUES (:uid,:sid,:sname,:amt)");
-    $insHist->execute([':uid' => $userId, ':sid' => $studentId, ':sname' => ($tInfo['StudentName'] ?? ''), ':amt' => $amount]);
-    $userPdo->commit();
+    $tInfo = json_decode($response, true);
+    if (!is_array($tInfo) || $tInfo['status'] !== 'success') {
+        throw new Exception('Không lấy được thông tin sinh viên');
+    }
+    $studentName = $tInfo['tuition']['StudentName'] ?? '';
 
-    // đổi trạng thái học phí sang Completed và gạch nợ số tiền
-    $tuitionPdo->beginTransaction();
-    $updTu = $tuitionPdo->prepare("UPDATE TuitionFee SET Status = 'Completed', Amount = 0  WHERE StudentID = :sid");
-    $updTu->execute([':sid' => $studentId]);
-    $tuitionPdo->commit();
+
+    // // thêm lịch sử giao dịch
+    $logUrl = "http://localhost/GKService/getway/auth/add_transactions";
+    $logPayload = json_encode([
+        'userId' => $userId,
+        'studentId' => $studentId,
+        'studentName' => $studentName,
+        'amount' => $amount
+    ]);
+
+    $ch = curl_init($logUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $logPayload);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    $logResponse = curl_exec($ch);
+    curl_close($ch);
+
+    $logResult = json_decode($logResponse, true);
+    if (!is_array($logResult) || $logResult['status'] !== 'success') {
+        error_log("Không ghi được lịch sử giao dịch: " . ($logResult['message'] ?? ''));
+    }
+
+
+    // Cập nhật trạng thái học phí sang "Completed"
+    $updateUrl = "http://localhost/GKService/getway/tuition/update_status";
+    $updatePayload = json_encode([
+        'studentId' => $studentId,
+        'newStatus' => 'Completed'
+    ]);
+
+    $ch = curl_init($updateUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $updatePayload);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    $updateResponse = curl_exec($ch);
+    curl_close($ch);
+
+    $updateResult = json_decode($updateResponse, true);
+    if (!is_array($updateResult) || $updateResult['status'] !== 'success') {
+        echo json_encode(['status' => 'error', 'message' => 'Không cập nhật được trạng thái học phí']);
+        exit;
+    }
 
     $paymentPdo->commit();
 
@@ -130,12 +182,7 @@ try {
     if ($paymentPdo->inTransaction()) {
         $paymentPdo->rollBack();
     }
-    if (isset($userPdo) && $userPdo->inTransaction()) {
-        $userPdo->rollBack();
-    }
-    if (isset($tuitionPdo) && $tuitionPdo->inTransaction()) {
-        $tuitionPdo->rollBack();
-    }
+
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => $e->getMessage() ?: 'Lỗi server']);
 }

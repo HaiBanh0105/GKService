@@ -37,22 +37,10 @@ if ($userId <= 0 || $studentId === '' || $amount <= 0 || $userEmail === '') {
 }
 
 try {
-    // Kết nối đến DB học phí để kiểm tra trạng thái học phí
-    $tuitionPdo = new PDO('mysql:host=localhost;dbname=TuitionFee;charset=utf8', 'root', '');
-    $tuitionPdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // Kiểm tra trạng thái học phí
-    $checkStmt = $tuitionPdo->prepare("SELECT Status FROM TuitionFee WHERE StudentID = :sid LIMIT 1");
-    $checkStmt->execute([':sid' => $studentId]);
-    $tuitionRow = $checkStmt->fetch(PDO::FETCH_ASSOC);
-    if (!$tuitionRow) {
-        echo json_encode(['status' => 'error', 'message' => 'Không tìm thấy học phí']);
-        exit;
-    }
-    if ($tuitionRow['Status'] !== 'Unpaid') {
-        echo json_encode(['status' => 'error', 'message' => 'Chỉ cho phép tạo OTP khi học phí ở trạng thái Chưa nộp']);
-        exit;
-    }
+    
+    // Vô hiệu hóa OTP cũ chưa dùng (nếu có)
+    $disableAllStmt = $paymentPdo->prepare("UPDATE OTPs SET IsUsed = 3 WHERE IsUsed = 0");
+    $disableAllStmt->execute();
 
     // Tạo bản ghi thanh toán và OTP
     $paymentPdo->beginTransaction();
@@ -66,11 +54,27 @@ try {
 
     $paymentPdo->commit();
 
-    // Cập nhật trạng thái học phí sang Processing
-    $tuitionPdo->beginTransaction();
-    $upd = $tuitionPdo->prepare("UPDATE TuitionFee SET Status = 'Processing' WHERE StudentID = :sid");
-    $upd->execute([':sid' => $studentId]);
-    $tuitionPdo->commit();
+    // Cập nhật trạng thái học phí sang "Processing"
+    $updateUrl = "http://localhost/GKService/getway/tuition/update_status";
+    $updatePayload = json_encode([
+        'studentId' => $studentId,
+        'newStatus' => 'Processing'
+    ]);
+
+    $ch = curl_init($updateUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $updatePayload);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    $updateResponse = curl_exec($ch);
+    curl_close($ch);
+
+    $updateResult = json_decode($updateResponse, true);
+    if (!is_array($updateResult) || $updateResult['status'] !== 'success') {
+        echo json_encode(['status' => 'error', 'message' => 'Không cập nhật được trạng thái học phí']);
+        exit;
+    }
+
 
     // Gửi email OTP
     $subject = 'Mã OTP xác nhận thanh toán học phí';
@@ -82,9 +86,7 @@ try {
     if ($paymentPdo->inTransaction()) {
         $paymentPdo->rollBack();
     }
-    if (isset($tuitionPdo) && $tuitionPdo->inTransaction()) {
-        $tuitionPdo->rollBack();
-    }
+    
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => 'Lỗi server']);
 }
