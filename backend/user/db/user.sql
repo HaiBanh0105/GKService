@@ -37,13 +37,7 @@ USE user;
 INSERT INTO User (Username, Password, FullName, Phone, Email, Address, AvailableBalance)
 SELECT 'vodathai', '123456', 'Vo Dat Hai', '0772663776', 'vodathai91thcsduclap@gmail.com', '700 Nguyen Van Linh, District 7', 10000000.00
 WHERE NOT EXISTS (
-    SELECT 1 FROM User WHERE Username = 'vodathai'
-);
-
-INSERT INTO User (Username, Password, FullName, Phone, Email, Address, AvailableBalance)
-SELECT 'vodathai2', '123456', 'Vo Dat Hai', '0772663776', '52300021@student.tdtu.edu.vn', '700 Nguyen Van Linh, District 7', 10000000.00
-WHERE NOT EXISTS (
-    SELECT 1 FROM User WHERE Username = 'vodathai2'
+    SELECT 1 FROM User WHERE Username = 'tdtu_user'
 );
 
 -- Legacy sample user

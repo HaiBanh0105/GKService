@@ -66,7 +66,7 @@ try {
 
 
     // lấy thông tin người dùng từ service user
-    $infoUrl = "http://localhost/GKService/getway/auth/get_user_info?userId=" . urlencode($userId);
+    $infoUrl = "http://localhost/GKService/getway/user/get_user_info?userId=" . urlencode($userId);
     $ch = curl_init($infoUrl);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $response = curl_exec($ch);
@@ -78,7 +78,7 @@ try {
     }
     $balRow = $userInfo['user'];
 
-    $deductUrl = "http://localhost/GKService/getway/auth/deduct_balance";
+    $deductUrl = "http://localhost/GKService/getway/user/deduct_balance";
     $payload = json_encode(['userId' => $userId, 'amount' => $amount]);
 
     $ch = curl_init($deductUrl);
@@ -112,7 +112,7 @@ try {
 
 
     // // thêm lịch sử giao dịch
-    $logUrl = "http://localhost/GKService/getway/auth/add_transactions";
+    $logUrl = "http://localhost/GKService/getway/user/add_transactions";
     $logPayload = json_encode([
         'userId' => $userId,
         'studentId' => $studentId,

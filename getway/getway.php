@@ -34,7 +34,7 @@ $serviceInfo = $config['routes'][$route];
 $serviceName = $serviceInfo['service'];
 $dir = $serviceInfo['dir'] ?? $serviceName;
 
-// Nếu bạn đang chạy XAMPP trên port 8080 và thư mục gốc là GKService
+
 $port = $config['ports'][$serviceName] ?? '80';
 $targetUrl = "http://localhost:$port/GKService/backend/$dir/{$serviceInfo['path']}";
 

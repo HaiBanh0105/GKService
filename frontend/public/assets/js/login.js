@@ -70,8 +70,8 @@ loginForm.addEventListener("submit", async (e) => {
             showError((data && data.message) ? data.message : "Đăng nhập thất bại!");
         }
     } catch (err) {
-        console.error(err);
-        showError("Lỗi kết nối API!");
+        console.error("Chi tiết lỗi:", err);
+        showError("Không thể kết nối đến máy chủ. Vui lòng thử lại sau.");
     } finally {
         loginBtn.disabled = false;
         loginBtnText.textContent = 'Đăng nhập';

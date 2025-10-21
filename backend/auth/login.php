@@ -52,7 +52,8 @@ try {
         'balance' => (float)$user['AvailableBalance']
     ];
 
-    echo json_encode(['status' => 'success', 'user' => $safeUser]);
+    // echo json_encode(['status' => 'success', 'user' => $safeUser]);
+    echo trim(json_encode(['status' => 'success', 'user' => $safeUser], JSON_UNESCAPED_UNICODE));
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => 'Lỗi server']);

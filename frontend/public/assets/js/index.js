@@ -42,21 +42,24 @@
         const canPay = amount > 0 && amount <= balance && currentTuitionStatus === 'Unpaid';
         submitBtn.disabled = !canPay;
         
-        if(currentTuitionStatus === 'Processing'){
+        if (amount > balance) {
+            submitBtn.style.background = '#e74c3c';
+            submitBtn.textContent = 'Số dư không đủ';
+            resendOtpBtn.style.display = 'none';
+        } 
+        else if(currentTuitionStatus === 'Processing'){
             submitBtn.disabled = false;
             submitBtn.style.background = '#c59328ff';
             submitBtn.textContent = 'Nhập otp';
             resendOtpBtn.style.display = 'inline-block';
+            resendOtpBtn.disabled = false;
         }
         else if (currentTuitionStatus && currentTuitionStatus !== 'Unpaid') {
             submitBtn.style.background = '#bdc3c7';
             submitBtn.textContent = 'Không thể thanh toán';  
             resendOtpBtn.style.display = 'none';
         } 
-        else if (amount > balance) {
-            submitBtn.style.background = '#e74c3c';
-            submitBtn.textContent = 'Số dư không đủ';
-        } else {
+        else {
             submitBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
             submitBtn.textContent = 'Xác nhận giao dịch';
             resendOtpBtn.style.display = 'none';
@@ -225,6 +228,7 @@
 
             submitBtn.textContent = 'Đang xác nhận OTP...';
             submitBtn.disabled = true;
+            resendOtpBtn.disabled = true;
 
             const res2 = await fetch('http://localhost/GKService/getway/payment/confirm_otp', {
                 method: 'POST',
