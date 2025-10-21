@@ -53,21 +53,34 @@ try {
         exit;
     }
 
+
     $userId = (int)$row['UserID'];
     $studentId = $row['StudentID'];
     $amount = (float)$row['Amount'];
 
-    // if ($callerId !== $userId) {
-    // echo json_encode([
-    //     'status' => 'error',
-    //     'message' => 'Giao dịch đang được xử lý bởi người dùng khác. Vui lòng chờ hoặc liên hệ quản trị viên.'
-    // ]);
-    // exit;
-    // }
+
 
 
     // Bắt đầu giao dịch
     $paymentPdo->beginTransaction();
+
+    // Kiểm tra trạng thái học phí trước khi xác nhận
+    $tuitionUrl = "http://localhost/GKService/getway/tuition/get?studentId=" . urlencode($studentId);
+    $ch = curl_init($tuitionUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $tuitionResponse = curl_exec($ch);
+    curl_close($ch);
+
+    $tuitionInfo = json_decode($tuitionResponse, true);
+    if (!is_array($tuitionInfo) || $tuitionInfo['status'] !== 'success') {
+        throw new Exception('Không lấy được thông tin học phí');
+    }
+
+    $currentStatus = $tuitionInfo['tuition']['Status'] ?? '';
+    if ($currentStatus === 'Completed') {
+        throw new Exception('Học phí đã được thanh toán trước đó, không thể xác nhận giao dịch này');
+    }
+
 
     // lấy thông tin người dùng từ service user
     $infoUrl = "http://localhost/GKService/getway/user/get_user_info?userId=" . urlencode($userId);

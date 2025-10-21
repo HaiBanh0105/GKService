@@ -112,7 +112,6 @@
         const sid = studentIdInput.value.trim();
         if (!sid) { alert('Vui lòng nhập mã số sinh viên'); return; }
         fetchTuitionByStudentId(sid);
-        
     });
 
     updateTotals();
@@ -169,6 +168,8 @@
     document.getElementById('registrationForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
+    fetchTuitionByStudentId(studentIdInput.value.trim());
+
     const amount = parseInt(feeAmountInput.value, 10) || 0;
     const balance = parseInt(balanceInput.value, 10) || 0;
     const studentId = studentIdInput.value.trim();
@@ -221,6 +222,7 @@
         // -------------------------------
         // B2: TRẠNG THÁI ĐANG XỬ LÝ → NHẬP OTP VÀ XÁC NHẬN
         // -------------------------------
+        fetchTuitionByStudentId(studentIdInput.value.trim());
         if (currentTuitionStatus === 'Processing') {
             const paymentId = localStorage.getItem('pendingPaymentId');
             if (!paymentId) {
@@ -248,6 +250,9 @@
 
             if (data2.status === 'error') {
                 alert(data2.message || 'Giao dịch không thành công');
+                submitBtn.textContent = 'Xác nhận giao dịch';
+                submitBtn.disabled = false;
+                resendOtpBtn.disabled = false;
                 return;
             }
 

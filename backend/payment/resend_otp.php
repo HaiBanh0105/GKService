@@ -37,9 +37,19 @@ if ($userId <= 0 || $studentId === '' || $amount <= 0 || $userEmail === '') {
 
 try {
 
-    // // Vô hiệu hóa OTP cũ chưa dùng (nếu có)
-    // $disableAllStmt = $paymentPdo->prepare("UPDATE OTPs SET IsUsed = 3 WHERE IsUsed = 0");
-    // $disableAllStmt->execute();
+    // Vô hiệu hóa OTP chưa dùng của sinh viên của user đang tạo (nếu có)
+    $disableStmt = $paymentPdo->prepare("
+    UPDATE OTPs 
+    JOIN Payment ON OTPs.PaymentID = Payment.PaymentID
+    SET OTPs.IsUsed = 3
+    WHERE OTPs.IsUsed = 0 
+    AND Payment.StudentID = :sid 
+    AND Payment.UserID = :uid
+    ");
+    $disableStmt->execute([
+        ':sid' => $studentId,
+        ':uid' => $userId
+    ]);
 
     // Tạo bản ghi thanh toán và OTP
     $paymentPdo->beginTransaction();
