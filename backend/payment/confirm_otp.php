@@ -28,6 +28,7 @@ if (!is_array($data)) {
 
 $paymentId = (int)($data['paymentId'] ?? 0);
 $code = trim($data['otp'] ?? '');
+$callerId = (int)($data['userId'] ?? 0);
 
 if ($paymentId <= 0 || $code === '') {
     echo json_encode(['status' => 'error', 'message' => 'Thiếu dữ liệu đầu vào']);
@@ -56,14 +57,17 @@ try {
     $studentId = $row['StudentID'];
     $amount = (float)$row['Amount'];
 
+    // if ($callerId !== $userId) {
+    // echo json_encode([
+    //     'status' => 'error',
+    //     'message' => 'Giao dịch đang được xử lý bởi người dùng khác. Vui lòng chờ hoặc liên hệ quản trị viên.'
+    // ]);
+    // exit;
+    // }
+
 
     // Bắt đầu giao dịch
     $paymentPdo->beginTransaction();
-
-    // Đánh dấu OTP là đã sử dụng
-    $updOtp = $paymentPdo->prepare("UPDATE OTPs SET IsUsed = 1 WHERE OtpID = :id");
-    $updOtp->execute([':id' => (int)$row['OtpID']]);
-
 
     // lấy thông tin người dùng từ service user
     $infoUrl = "http://localhost/GKService/getway/user/get_user_info?userId=" . urlencode($userId);
@@ -73,10 +77,15 @@ try {
     curl_close($ch);
 
     $userInfo = json_decode($response, true);
+
     if (!is_array($userInfo) || $userInfo['status'] !== 'success') {
         throw new Exception('Không lấy được thông tin người dùng');
     }
     $balRow = $userInfo['user'];
+    if ((float)$balRow['AvailableBalance'] < $amount) {
+        throw new Exception('Số dư không đủ để thực hiện giao dịch');
+    }
+
 
     $deductUrl = "http://localhost/GKService/getway/user/deduct_balance";
     $payload = json_encode(['userId' => $userId, 'amount' => $amount]);
@@ -96,6 +105,9 @@ try {
 
     $newBal = (float)$result['newBalance'];
 
+    // Đánh dấu OTP là đã sử dụng
+    $updOtp = $paymentPdo->prepare("UPDATE OTPs SET IsUsed = 1 WHERE OtpID = :id");
+    $updOtp->execute([':id' => (int)$row['OtpID']]);
 
     // lấy thông tin sinh viên từ service học phí
     $infoUrl = "http://localhost/GKService/getway/tuition/get?studentId=" . urlencode($studentId);
@@ -183,6 +195,14 @@ try {
         $paymentPdo->rollBack();
     }
 
-    http_response_code(500);
-    echo json_encode(['status' => 'error', 'message' => $e->getMessage() ?: 'Lỗi server']);
+    $message = $e->getMessage() ?: 'Lỗi server';
+
+    // Nếu là lỗi logic như số dư không đủ, trả mã 400
+    if (str_contains($message, 'Số dư không đủ')) {
+        http_response_code(400);
+    } else {
+        http_response_code(500);
+    }
+
+    echo json_encode(['status' => 'error', 'message' => $message]);
 }

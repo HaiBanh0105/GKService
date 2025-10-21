@@ -37,10 +37,10 @@ if ($userId <= 0 || $studentId === '' || $amount <= 0 || $userEmail === '') {
 }
 
 try {
-    
-    // Vô hiệu hóa OTP cũ chưa dùng (nếu có)
-    $disableAllStmt = $paymentPdo->prepare("UPDATE OTPs SET IsUsed = 3 WHERE IsUsed = 0");
-    $disableAllStmt->execute();
+
+    // // Vô hiệu hóa OTP cũ chưa dùng (nếu có)
+    // $disableAllStmt = $paymentPdo->prepare("UPDATE OTPs SET IsUsed = 3 WHERE IsUsed = 0");
+    // $disableAllStmt->execute();
 
     // Tạo bản ghi thanh toán và OTP
     $paymentPdo->beginTransaction();
@@ -49,7 +49,7 @@ try {
     $paymentId = (int)$paymentPdo->lastInsertId();
 
     $otp = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-    $stmt2 = $paymentPdo->prepare("INSERT INTO OTPs(PaymentID, Code, ExpiredAt) VALUES (:pid, :code, DATE_ADD(NOW(), INTERVAL 5 MINUTE))");
+    $stmt2 = $paymentPdo->prepare("INSERT INTO OTPs(PaymentID, Code, ExpiredAt) VALUES (:pid, :code, DATE_ADD(NOW(), INTERVAL 2 miNUTE))");
     $stmt2->execute([':pid' => $paymentId, ':code' => $otp]);
 
     $paymentPdo->commit();
@@ -78,7 +78,9 @@ try {
 
     // Gửi email OTP
     $subject = 'Mã OTP xác nhận thanh toán học phí';
-    $body = '<p>Mã OTP của bạn là: <strong>' . htmlspecialchars($otp) . '</strong></p><p>OTP có hiệu lực trong 5 phút.</p>';
+    $body = '<p>Xác nhận thanh toán cho sinh viên: <strong>' . htmlspecialchars($studentId) . '</strong></p>' .
+        '<p>Mã OTP của bạn là: <strong>' . htmlspecialchars($otp) . '</strong></p>' .
+        '<p>OTP có hiệu lực trong 5 phút.</p>';
     sendEmail($userEmail, $subject, $body);
 
     echo json_encode(['status' => 'success', 'paymentId' => $paymentId]);
@@ -86,7 +88,7 @@ try {
     if ($paymentPdo->inTransaction()) {
         $paymentPdo->rollBack();
     }
-    
+
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => 'Lỗi server']);
 }

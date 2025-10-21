@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('Asia/Ho_Chi_Minh');
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
@@ -36,9 +37,9 @@ if ($userId <= 0 || $studentId === '' || $amount <= 0 || $userEmail === '') {
 
 try {
 
-    // Vô hiệu hóa OTP cũ chưa dùng (nếu có)
-    $disableAllStmt = $paymentPdo->prepare("UPDATE OTPs SET IsUsed = 3 WHERE IsUsed = 0");
-    $disableAllStmt->execute();
+    // // Vô hiệu hóa OTP cũ chưa dùng (nếu có)
+    // $disableAllStmt = $paymentPdo->prepare("UPDATE OTPs SET IsUsed = 3 WHERE IsUsed = 0");
+    // $disableAllStmt->execute();
 
     // Tạo bản ghi thanh toán và OTP
     $paymentPdo->beginTransaction();
@@ -54,9 +55,11 @@ try {
 
 
 
-    // Gửi email OTP
-    $subject = 'Gửi lại mã OTP cho thanh toán học phí';
-    $body = '<p>Mã OTP mới của bạn là: <strong>' . htmlspecialchars($otp) . '</strong></p><p>OTP có hiệu lực trong 5 phút.</p>';
+    // Gửi lại email OTP
+    $subject = 'Mã OTP mới xác nhận thanh toán học phí';
+    $body = '<p>Xác nhận thanh toán cho sinh viên: <strong>' . htmlspecialchars($studentId) . '</strong></p>' .
+        '<p>Mã OTP mới của bạn là: <strong>' . htmlspecialchars($otp) . '</strong></p>' .
+        '<p>OTP có hiệu lực trong 5 phút.</p>';
     sendEmail($userEmail, $subject, $body);
 
     echo json_encode(['status' => 'success', 'paymentId' => $paymentId]);

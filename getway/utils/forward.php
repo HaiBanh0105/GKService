@@ -30,5 +30,10 @@ function forward($url, $method = 'POST', $data = [])
         return trim($response);
     }
 
-    return json_encode(['status' => 'error', 'message' => 'Không có phản hồi từ service']);
+    // return json_encode(['status' => 'error', 'message' => 'Không có phản hồi từ service']);
+    // Nếu có phản hồi JSON, vẫn trả về để frontend xử lý
+    return $response ?: json_encode([
+        'status' => 'error',
+        'message' => 'Không có phản hồi từ service'
+    ]);
 }

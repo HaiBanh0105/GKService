@@ -24,7 +24,9 @@
 
     const statusMap = { 'Completed': 'Hoàn thành', 'Processing': 'Đang xử lý', 'Unpaid': 'Chưa nộp' };
     let currentTuitionStatus = null;
+    studentNameInput.readOnly = true;
 
+    const userId = user.id;
     nameInput.value = user.fullname || '';
     phoneInput.value = user.phone || '';
     emailInput.value = user.email || '';
@@ -80,6 +82,13 @@
                 feeAmountInput.value = parseInt(t.Amount, 10) || 0;
                 feeAmountInput.readOnly = true;
                 feeAmountInput.style.background = '#f5f5f5';
+
+                // Cập nhật số dư người dùng mới nhất
+                const userRes = await fetch(`http://localhost/GKService/getway/user/get_user_info?userId=${userId}`);
+                const userData = await userRes.json();
+                if (userData.status === 'success') {
+                    balanceInput.value = Math.floor(userData.user.AvailableBalance || 0);
+                }
                 updateTotals();
             } 
             
@@ -103,16 +112,15 @@
         const sid = studentIdInput.value.trim();
         if (!sid) { alert('Vui lòng nhập mã số sinh viên'); return; }
         fetchTuitionByStudentId(sid);
-        // if(currentTuitionStatus === 'Processing' && currentTuitionStatus !== null){
-        //     resendOtpBtn.style.display = 'inline-block';
-        //     }   
-        // else{
-        //     resendOtpBtn.style.display = 'none';}
+        
     });
 
     updateTotals();
 
     resendOtpBtn.addEventListener('click', async function (e) {
+    if (!confirm('Bạn có chắc chắn gửi lại otp không?')) {
+        return;
+    }
     e.preventDefault();
     const amount = parseInt(feeAmountInput.value, 10) || 0;
     const studentId = studentIdInput.value.trim();
@@ -233,10 +241,15 @@
             const res2 = await fetch('http://localhost/GKService/getway/payment/confirm_otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId: paymentId, otp: otpInput.trim() })
+                body: JSON.stringify({ paymentId: paymentId, otp: otpInput.trim(), userId: user.id })
             });
 
             const data2 = await res2.json();
+
+            if (data2.status === 'error') {
+                alert(data2.message || 'Giao dịch không thành công');
+                return;
+            }
 
             if (data2.status === 'success') {
                 otpValid = true;
@@ -278,7 +291,7 @@
                     success.style.display = 'none';
                 }, 5000);
             } else {
-                alert(data2.message || 'OTP không hợp lệ hoặc hết hạn');
+                alert(data2.message || 'Giao dịch không thành công');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Nhập OTP lại';
                 submitBtn.style.background = '#c59328ff';
@@ -288,6 +301,7 @@
         console.error(err);
         alert('Lỗi kết nối dịch vụ thanh toán');
         submitBtn.disabled = false;
+        resendOtpBtn.disabled = false;
         submitBtn.textContent = 'Xác nhận giao dịch';
     }
 });
